@@ -4,8 +4,8 @@ Created on Wed Mar 21 17:26:06 2018
 
 @author: Anna
 """
-from greek_prosody import PUNCTUATION
-from accents import get_accent
+from Greek_Prosody.characters import PUNCTUATION
+from Greek_Prosody.accents import get_accent
 import re
 
 NORMAL_ENCLITICS = ['μου', 'μοι', 'με', 'μευ', 'σου', 'σοι', 'σε',

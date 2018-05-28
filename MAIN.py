@@ -6,7 +6,7 @@ Created on Sun Mar 25 15:13:35 2018
 """
 
 #%%
-from class_play import Play
+from Analysis.class_play import Play
 #%%
 ### PROSE CONTROL (LYSIAS)
 l_directory = '..//Corpus/Control/'
@@ -95,7 +95,7 @@ print('Average Percent Repetition: ' + str(repeat_average))
 
 #%%
 # Euripides, Heracles
-from class_play import Play
+from Analysis.class_play import Play
 E_directory = '..//Corpus/Euripides/'
 Heracles = Play('Heracles', 'Eur-Her-NEW.csv', E_directory)
 Heracles.export_analysis(E_directory)

@@ -5,8 +5,8 @@ Created on Wed Mar  7 16:55:14 2018
 @author: Anna
 """
 import re
-from class_syllable import Syllable
-from greek_prosody import get_syllables, count_syllables
+from .class_syllable import Syllable
+import Greek_Prosody.syllables as SYLLABLES
 
 CORRUPTION_REGEX = re.compile(r'†|\$|⟨\s+⟩')
 
@@ -45,7 +45,7 @@ class Line ():
         if self._syllables:
             return self._syllables
         else:
-            raw_syllables = get_syllables(self.text, resolutions=True)
+            raw_syllables = SYLLABLES.get_syllables(self.text, resolutions=True)
             syllables = [Syllable(i, s) for i, s in enumerate(raw_syllables)]
             for s in syllables:
                 s.line_number = self.number
@@ -59,7 +59,7 @@ class Line ():
     
     @property
     def syl_count (self):
-        return count_syllables(self.text)
+        return len(self.syllables)
     
     @property
     def display_data (self):

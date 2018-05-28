@@ -4,9 +4,9 @@ Created on Mon Mar  5 15:02:20 2018
 
 @author: Anna
 """
-from stanza_utilities import import_csv
-from class_stanza import Stanza
-from class_StanzaGroup import StanzaGroup
+from Utilities.stanza_utilities import import_csv
+from .class_stanza import Stanza
+from .class_StanzaGroup import StanzaGroup
 
 #%%
 class Play ():
@@ -24,10 +24,10 @@ class Play ():
             st = Stanza(name, st_raw)
             an = Stanza(name, an_raw)
             pair = StanzaGroup(name, [st, an])
-            if meter != '':
+            if meter:
                 clean_meter = meter.replace('\n', '')
                 meter_list = [m for m in clean_meter]
-                pair.meter = meter_list
+                pair._meter = meter_list
             pair.notes = notes
             pair.song_number = int(song_num)
             stanza_pairs.append(pair)

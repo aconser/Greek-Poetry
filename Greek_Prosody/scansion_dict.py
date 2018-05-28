@@ -11,8 +11,10 @@ Created on Thu May 10 15:53:27 2018
 
 import re
 import unicodedata
-from greek_prosody import PUNCTUATION, get_syllables, positional_length, prosody_tuples, add_length_markers, remove_length_markers
-from scan_trimeter import scan_trimeter, just_trimeters
+from characters import PUNCTUATION
+from syllables import get_syllables
+from prosody import positional_length, prosody_tuples, add_length_markers, remove_length_markers
+from trimeter import scan_trimeter, just_trimeters
 
 def lossless_split(string, separator=r'\s+'):
     regex = re.compile(r'(' + separator + r')')

@@ -4,7 +4,7 @@ Created on Wed Mar  7 17:12:31 2018
 
 @author: Anna
 """
-from accents import get_named_accent
+import Greek_Prosody.accents as ACCENTS
 import re
 WORD_END_RE = re.compile(r".*[\s.,;·!’']$")
 ###############################################
@@ -24,7 +24,7 @@ class Syllable:
         
     @property
     def accent (self):
-        return get_named_accent(self.text)
+        return ACCENTS.get_named_accent(self.text)
     
     @property
     def word_end (self):
@@ -49,7 +49,7 @@ class Syllable:
         self.tags.append(tag)
 
 #######################################
-import greek_prosody as GP
+import Greek_Prosody.prosody as PROSODY
 
 class SylGroup:
     """Takes a list/tuple of Syllable objects that occupy the same metrical position
@@ -65,7 +65,7 @@ class SylGroup:
         'Syllables do not have same number'
         self.syllables = syl_list
         self.corrupt = any(s.corrupt for s in self.syllables)
-        self.prosody = GP.combine_scansions(
+        self.prosody = PROSODY.combine_scansions(
                 [s.prosody for s in self.syllables], metrical_symbols=True)
         self.all_contours = [s.contour for s in self.syllables]
         self._contour = ''

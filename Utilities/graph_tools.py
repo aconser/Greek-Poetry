@@ -79,7 +79,7 @@ def Test_graphing ():
     Ag = Play('Agamemnon', Ag_file, A_directory)
     graph_play(Ag)
     return Ag
-fr#%%
+#%%
 #from class_play import Play
 #from os import listdir
 #A_directory = '..//Corpus/Aeschylus/'

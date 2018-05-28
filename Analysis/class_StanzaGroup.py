@@ -5,7 +5,7 @@ Created on Fri Mar 23 11:06:07 2018
 @author: Anna
 CLASS StanzaGroup
 """
-import greek_prosody as GP
+import Greek_Prosody.prosody as GP
 import class_syllable as CS
 
 

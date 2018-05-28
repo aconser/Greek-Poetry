@@ -17,8 +17,10 @@ vowels to the extent possible.
 #%%
     
 import scansion_dict as SD
-import scan_trimeter as ST
-from greek_prosody import strip_str, get_syllables, get_prosody, pretty_scansion
+import trimeter as ST
+from characters import basic_chars
+from syllables import get_syllables
+from prosody import get_prosody, pretty_scansion
 
 class Scanner:
     def __init__ (self, lunate=False):
@@ -35,7 +37,7 @@ class Scanner:
         syllables = [get_syllables(m) for m in marked]
         scansion = [pretty_scansion(get_prosody(m)) for m in marked]
         for syls, scan in zip(syllables, scansion):
-            widths = [len(strip_str(s)) for s in syls]
+            widths = [len(basic_chars(s)) for s in syls]
             format_scan = [m.center(width) for m, width in zip(scan, widths)]
             print(''.join(format_scan))
             print(''.join(syls))

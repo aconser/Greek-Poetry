@@ -8,12 +8,12 @@ Class Stanza
 """
 #%%
 import re
-#from contonations import contonations
-from greek_prosody import get_syllables, count_syllables, scan_line
+import Greek_Prosody.syllables as SYLLABLES
+import Greek_Prosody.prosody as PROSODY
 #from accents import get_accent_index
-from class_word import Word
-from class_line import Line
-from class_syllable import Syllable
+from .class_word import Word
+from .class_line import Line
+from .class_syllable import Syllable
 #from cltk.tag.pos import POSTag
 
 class Stanza ():
@@ -23,11 +23,12 @@ class Stanza ():
         self.name = name
         self.raw_text = raw_text
         self.start_line = start_line
-        self.scansion = 0
+        self.scansion = []
         self.tags = []
         self._syllables = []
         self._contours = []
         self._lines = []
+        self._corrupt = None
         
     def __repr__ (self):
         return '{}: {} '.format(self.name, self.raw_text)
@@ -75,10 +76,8 @@ class Stanza ():
         """If meter has been manually added, returns that.  Otherwise, combines 
         the metrical data that can be extracted from the texts.
         """
-        if self.scansion != 0:
-            return self.meter
-        else:
-            return scan_line(self.clean_text)
+        if not self._meter:
+            self._meter = PROSODY.get_prosody(self.clean_text)
         
     @property
     def raw_lines (self):
@@ -139,13 +138,13 @@ class Stanza ():
         to each."""
         if self._syllables:
             return self._syllables
-        raw_syllables = get_syllables(self.clean_text, resolutions=True)
+        raw_syllables = SYLLABLES.get_syllables(self.clean_text, resolutions=True)
         syllables = [Syllable(i, s) for i, s in enumerate(raw_syllables)]
         # Assemble data about the containing word for each syllable
         word_data_list = []
         for w in self.words:
             data = (w.text, w.lemma, w.POS, w.tags)
-            word_data_list.extend([data] * count_syllables(w.text))
+            word_data_list.extend([data] * SYLLABLES.count_syllables(w.text))
         # Assemble data about the containing line for each syllable
         line_data_list = []
         for l in self.raw_lines:
@@ -172,12 +171,9 @@ class Stanza ():
     
     @property
     def corrupt (self):
-        for l in self.lines:
-            if l.corrupt:
-                self.corrupt = True
-                return True
-        else:
-            return False
+        if not self._corrupt:
+            self._corrupt = any(l.corrupt for l in self.lines)
+        return self._corrupt
     
     @property
     def lines (self):

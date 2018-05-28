@@ -8,7 +8,7 @@ ACCENTS
 Tools for looking at accents
 """
 import unicodedata
-from Greek_Prosody.greek_prosody import get_syllables
+#from Greek_Prosody.syllables import get_syllables
 #%%
 
 ACUTE = u'\u0301'
@@ -22,6 +22,7 @@ ACCENT_DICT = {ACUTE: 'A',
                CIRCUMFLEX: 'C',
                None: '-'
                }
+
 def remove_accents (text):
     split_chs = unicodedata.normalize("NFD", text)
     accentless = ''
@@ -40,18 +41,18 @@ def get_named_accent (syllable):
     accent = get_accent(syllable)
     return ACCENT_DICT[accent]
 
-def get_accent_index (word):
-    """Breaks a word into syllables, checks each syllable for an accent, and
-    returns the syllable index of the first syllable with an accent.
-    
-    :param str word: a word or contonation
-    :return int syl_num: the index of the accented syl within the word
-    """
-    syl_num = 0
-    for syl in get_syllables(word, resolutions=True):
-        if get_named_accent(syl) != '-':
-            return syl_num
-        syl_num += 1
+#def get_accent_index (word):
+#    """Breaks a word into syllables, checks each syllable for an accent, and
+#    returns the syllable index of the first syllable with an accent.
+#    
+#    :param str word: a word or contonation
+#    :return int syl_num: the index of the accented syl within the word
+#    """
+#    syl_num = 0
+#    for syl in get_syllables(word, resolutions=True):
+#        if get_named_accent(syl) != '-':
+#            return syl_num
+#        syl_num += 1
 
 #def compare_accents (acc_a, acc_b):
 #    """Identifies the basic responsion status of a syllable, returns a string
