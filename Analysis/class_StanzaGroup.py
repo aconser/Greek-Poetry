@@ -7,7 +7,7 @@ CLASS StanzaGroup
 """
 #%%
 
-from class_syllable import SylGroup
+from . import class_syllable as CS
 
 class StanzaGroup:
     """Contains, compares, and displays the data for two or more stanzas which 
@@ -52,7 +52,7 @@ class StanzaGroup:
         if self._syllables:
             return self._syllables
         position_list = zip([st.syllables for st in self.stanzas])
-        combined = [SylGroup(p) for p in position_list]
+        combined = [CS.SylGroup(p) for p in position_list]
         self._syllables = combined
         return combined
     
