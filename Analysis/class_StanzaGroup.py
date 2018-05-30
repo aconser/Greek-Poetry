@@ -272,6 +272,7 @@ class StanzaGroup:
             nested_lines.append(line_data)
             start = end
         return nested_lines
+    
         
     def display_readable (self):
         print()
