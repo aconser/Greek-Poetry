@@ -5,9 +5,9 @@ Created on Fri Mar 23 11:06:07 2018
 @author: Anna
 CLASS StanzaGroup
 """
-import Greek_Prosody.prosody as GP
-from . import class_syllable as CS
+#%%
 
+from . import class_syllable as CS
 
 class StanzaGroup:
     """Contains, compares, and displays the data for two or more stanzas which 
@@ -16,10 +16,10 @@ class StanzaGroup:
     def __init__ (self, name, stanza_list):
         self.name = name
         self.stanzas = stanza_list
-        self.count = len(self.stanzas)
+        self.stanza_count = len(self.stanzas)
         
         #Check for sufficient stanzas
-        assert self.count > 1, \
+        assert self.stanza_count > 1, \
         'Two few stanzas for a StanzaGroup (see {})'.format(stanza_list[0].name)
         
         #Name strophe and antistrophe for easy access
@@ -31,210 +31,184 @@ class StanzaGroup:
         for s in self.stanzas:
             assert s.syl_count == first_syl_count, \
             'Responsion issue in {}'.format(self.name)
-            
+        self.line_count = self.strophe.line_count
+        self.corrupt = any(s.corrupt for s in self.stanzas)
         self._syllables = []
-        self._corrupt_list = []
-        self._contours = []
-        self._raw_contours = []
+        self._secure_syls = []
         self._meter = []
+        self._contours = []
+        self._pretty_contours = []
+        self._match_statuses = []
+        self._secure_match_statuses = []
         self._repeat_count = None
         self._match_count = None
         self._syl_tags = []
         
-    @property
-    def raw_syl_count (self):
-        return self.strophe.syl_count
-    
-    @property
-    def corrupt (self):
-        for s in self.stanzas:
-            if s.corrupt:
-                return True
-        else:
-            return False
-            
-    @property
-    def line_count (self):
-        return self.strophe.line_count
 
     @property
     def syllables (self):
-        """Combines the syllables from all stanzas into a single list of Syllable
-        objects.
-        """
+        """Creates a list of SylGroup objects from the responding syllables of
+        all responding stanzas."""
         if self._syllables:
             return self._syllables
-        syllables = []
-        for syl_group in zip(*[s.syllables for s in self.stanzas]):
-            syllables.append(CS.combine_syls(syl_group))
-        self._syllables = syllables
-        return syllables
+        position_list = zip([st.syllables for st in self.stanzas])
+        combined = [CS.SylGroup(p) for p in position_list]
+        self._syllables = combined
+        return combined
     
-
     @property
     def meter (self):
-        """Merges the meter data for responding stanzas, to fill in unknown 
-        quantities wherever possible. If the stanzas disagree on the quantity of
-        a given position, it is marked as anceps ('ANC').
-        """
-        if self._meter:
-            return self._meter
-        merged_meter = GP.combine_scansions([s.meter for s in self.stanzas], metrical_symbols=True)
-        self._meter = merged_meter
-        return merged_meter
-            
+        if not self._meter:
+            self._meter = [syl.prosody for syl in self.syllables]
+        return self._meter
+    
     @meter.setter
     def meter (self, meter_list):
+        assert type(meter_list) is list, 'Meter must be a list'
         self._meter = meter_list
-        
-    @property
-    def pretty_meter (self):
-        scansion_dict = {'X'  : '⏒',
-                         'R'  : '⏔',
-                         'ANC': '⏒',
-                         'L' : '–',
-                         'S' : '⏑',
-                         }
-        pretty_meter = [scansion_dict[m] for m in self.meter]
-        return pretty_meter
-    
-    @property
-    def raw_contours (self):
-        """Merges the contour data for responding stanzas, and returns a list
-        of melodic contours.  This presumes that the melody was repeated 
-        identically but also followed the contours of the word accentuation in 
-        all reponding stanzas.
-        """
-        if self._raw_contours:
-            return self._raw_contours
-        contours = []
-        for position in zip(*[s.contours for s in self.stanzas]):
-            if all(p == 'N' for p in position):
-                contours.append('N')
-            elif 'UP-G' in position:
-                if 'DN' in position or 'DN-A' in position:
-                    contours.append('=')
-                else:
-                    contours.append('UP-G')
-            elif 'UP' in position:
-                if 'DN' in position or 'DN-A' in position:
-                    contours.append('=')
-                else:
-                    contours.append('UP')
-            elif all(p == 'DN-A' for p in position):
-                contours.append('DN-A')
-            else:
-                contours.append('DN')
-        self._raw_contours = contours
-        return contours
     
     @property
     def contours (self):
-        """Contours with corrupt syllables marked as 'X'
+        """The merged contour data for responding stanzas. This presumes that 
+        the melody was repeated identically but also followed the contours of 
+        the word accentuation in all reponding stanzas.
         """
-        if self._contours:
-            return self._contours
-        new_contours = []
-        for i, c in enumerate (self.raw_contours):
-            if self.corrupt_list[i]:
-                c = 'X'
-            new_contours.append(c)
-        self._contours = new_contours
-        return new_contours
+        if not self._contours:
+            self._contours = [s.contour for s in self.syllables]
+        return self._contours
     
     @property
     def pretty_contours (self):
         """Contours as needed for display / composition. Melodic movement is 
-        indicated by arrows. Corrupt syllables are included.
+        indicated by arrows.
         """
-        
-        arrow_dict = {'N' : 'x',
-                      '=' : '=',
-                      'UP-G' : '≤',
-                      'UP' : '↗',
-                      'DN-A' : '⇘',
-                      'DN' : '↘',
-                     }
-                       #Other arrow options I could sub in: '→', '⇗'
-        pretty_contours = [arrow_dict[c] for c in self.raw_contours]
-        return pretty_contours
-        
-    @property
-    def corrupt_list (self):
-        if self._corrupt_list:
-            return self._corrupt_list
-        corrupt_list = []
-        for i in range(self.raw_syl_count):
-            corrupt = False
-            if self.strophe.syllables[i].corrupt:
-                corrupt = True
-            elif self.antistrophe.syllables[i].corrupt:
-                corrupt = True
-            corrupt_list.append(corrupt)
-        self._corrupt_list = corrupt_list
-        return corrupt_list
+        if not self._pretty_contours:
+             self._pretty_contours = [s.pretty_contour for s in self.syllables]
+        return self._pretty_contours
+    
+    @property    
+    def match_statuses (self):
+        if not self._match_statuses:
+            self._match_statuses = [s.match_status for s in self.syllables]
+        return self._match_statuses
     
     @property
-    def corrupt_count (self):
-        return self.corrupt_list.count(True)
+    def secure_syls (self):
+        """Only the syllables in lines without signs of corruption."""
+        if not self._secure_syls:
+            self._secure_syls = [s for s in self.syls if not s.corrupt]
+        return self._secure_syls
+
+    @property
+    def secure_match_statuses (self):
+        """Used for statistics purposes."""
+        if not self._secure_match_statuses:
+            self._secure_match_statuses = [s.match_status for s in self.secure_syls]
+        return self._secure_match_statuses
     
     @property
-    def syl_count (self):
-        return (self.raw_syl_count - self.corrupt_count)
-    
-    def add_stats (self):
-        """NOTE THIS IS ONLY FOR PAIRS, and won't work for Pindar, etc."""
-        strong_match = 0    # All contours are 'DN-A'
-        mid_match = 0       # All contours are 'DN-A' or 'DN'
-        match = 0           # All contours are 'UP' or all are 'DN'
-        strong_conflict = 0 # Position contains 'DN-A' and 'UP' or '='
-        mid_conflict = 0    # Position contains 'UP' and 'DN'
-        weak_conflict = 0   # Position contains '=' and 'UP or 'DN'
-        non_conflict = 0    # All other combinations (weak match, since compatible)
-        stat_list = []
-        for i, position in enumerate( zip(*[s.contours for s in self.stanzas])):
-            #Check for corruption:
-            if self.corrupt_list[i]:
-                stat_list.append('X')
-                continue
-            #Check for matches:
-            if all(p == 'DN-A' for p in position):
-                strong_match += 1
-                stat_list.append('M-1')
-            elif all(p in ['DN-A', 'DN'] for p in position):
-                mid_match += 1
-                stat_list.append('M-2')
-            elif all(p in ['UP', 'UP-G'] for p in position):
-                match += 1
-                stat_list.append('M-3')
-            elif all(p == 'DN' for p in position):
-                match += 1
-                stat_list.append('M-3')
-            elif 'N' in position:
-                non_conflict += 1
-                stat_list.append('M-4')
-            else:
-                #Check for and sort conflicts:
-                if 'DN-A' in position:
-                    strong_conflict += 1
-                    stat_list.append('Con-1')
-                elif 'UP' in position:
-                    mid_conflict += 1
-                    stat_list.append('Con-2')
-                elif 'UP-G' in position:
-                    weak_conflict += 1
-                    stat_list.append('Con-3')
-                else:
-                    assert False, 'Missing Stat Category for {}'.format(self.name)
-        self.M1 = strong_match
-        self.M2 = mid_match
-        self.M3 = match
-        self.C2 = mid_conflict
-        self.C1 = strong_conflict
-        self.C3 = weak_conflict
-        self.M4 = non_conflict
-        self.stat_list = stat_list
+    def secure_contours (self):
+        """Used for statistics purposes."""
+        if not self._secure_contours:
+            self._secure_contours = [s.contour for s in self.secure_syls]
+        return self._secure_contours
+
+# SIMPLE STATISTICS
         
+    @property
+    def total_syl_count (self):
+        return self.strophe.syl_count
+    
+    @property
+    def secure_syl_count (self):
+        return len(self.secure_syls)
+    
+    @property
+    def corrupt_syl_count (self):
+        return self.total_syl_count - self.secure_syl_count
+    
+    @property
+    def total_match_count (self):
+        """The total number of matched post-accentual falls."""
+        return self.match_statuses.count('M1')
+    
+    @property
+    def secure_match_count (self):
+        """The total number of matched post-accentual falls."""
+        return self.secure_match_statuses.count('M1')
+    
+    @property
+    def total_contra_count (self):
+        """The number of post-accentual falls that cannot be accomodated in 
+        by conflicting contours in responding stanzas."""
+        return self.match_statuses.count('C1')
+    
+    @property
+    def secure_contra_count (self):
+        """The number of post-accentual falls that cannot be accomodated in 
+        by conflicting contours in responding stanzas."""
+        return self._secure_match_statuses.count('C1')
+
+    @property
+    def total_repeat_count (self):
+        """The number of repeated notes required by a stanza"""
+        return self.contours.count('=')
+    
+    @property
+    def secure_repeat_count (self):
+        """The number of repeated notes required by a stanza"""
+        return self.secure_contours.count('=')
+
+    @property
+    def total_matched_wb_count (self):
+        """The number of aligned wordbreaks."""
+        return self.match_statuses.count('N')
+    
+    @property 
+    def total_repeat_percentage (self, secure=True):
+        return (self.repeat_count / self.secure_syl_count)
+
+    @property 
+    def secure_repeat_percentage (self, secure=True):
+        return (self.secure_repeat_count / self.secure_syl_count)
+
+    @property
+    def total_match_percentage (self, secure=True):
+        return (self.match_count / self.secure_syl_count)
+
+    @property
+    def secure_match_percentage (self, secure=True):
+        return (self.secure_match_count / self.secure_syl_count)
+    
+# DISPLAY
+
+    def display_data_2 (self):
+        """Returns a list of lines, each of which is a nested tuple containing 
+        that line's attributes: 
+            (syl_widths, 
+            (meter, stanza_1_syls, stanza_2_syls... etc. , contours)
+            )
+        """
+        nested_lines = []
+        start = 0
+        for i in range(self.line_count):
+            end = start + self.strophe.lines[i].syl_count
+            numbers = [str(n) for n in range(start, end)]
+            meter = self.meter[start:end]
+            contours = self.pretty_contours[start:end]
+            syl_text_list = []
+            widths = []
+            for s in self.syllables[start:end]:
+                syl_texts = list(zip(*[s.join_texts for s in self.syllables[start:end]]))
+                syl_text_list.append(syl_texts)
+                widths.append( max(len(s) for s in syl_texts) )
+            meter = self.meter[start:end]
+            line_data = (widths,
+                         (numbers, meter) + tuple(syl_text_list) + (contours,)
+                        )
+            nested_lines.append(line_data)
+            start = end
+        return nested_lines
 
     def _nested_lines (self):
         """Returns a list of lines, each of which is tuple containing that 
@@ -246,7 +220,6 @@ class StanzaGroup:
         (['23', '24', ...], ['syl23', 'syl24',...], ...),
         ... ]
         """
-        self.add_stats()
         nested_lines = []
         start = 0
         for i in range(self.line_count):
@@ -299,6 +272,7 @@ class StanzaGroup:
             nested_lines.append(line_data)
             start = end
         return nested_lines
+    
         
     def display_readable (self):
         print()
@@ -321,22 +295,7 @@ class StanzaGroup:
             self._repeat_count = repeat_count
             return repeat_count
     
-    @property 
-    def repeat_percentage (self):
-        return (self.repeat_count / self.syl_count)
-    
-    @property
-    def match_count (self):
-        if self._match_count:
-            return self._match_count
-        else:
-            self.add_stats()
-            self._match_count = self.M1
-            return self._match_count
-        
-    @property
-    def match_percentage (self):
-        return (self.match_count / self.syl_count)
+
     
     def print_stats (self):
         self.add_stats()
