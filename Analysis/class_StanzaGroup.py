@@ -196,24 +196,15 @@ class StanzaGroup:
             numbers = [str(n) for n in range(start, end)]
             meter = self.meter[start:end]
             contours = self.pretty_contours[start:end]
-            syl_texts= []
+            syl_text_list = []
             widths = []
-            for s in self.syllables[start:end]
-            syl_texts = list(zip(*[s.join_texts for s in self.syllables[start:end]]))
-            syl_widths = 
-            
-            stanza_syls = []
-            for st in self.stanzas:
-                stanza_syls.append(
-                        [s.join_text for s in st.syllables[start:end]]
-                        )
+            for s in self.syllables[start:end]:
+                syl_texts = list(zip(*[s.join_texts for s in self.syllables[start:end]]))
+                syl_text_list.append(syl_texts)
+                widths.append( max(len(s) for s in syl_texts) )
             meter = self.meter[start:end]
-            syl_widths = []
-            for syl in self.syllables:
-                width = max(len(s) for s in syl.texts)
-                syl_widths.append(width)
-            line_data = (syl_widths,
-                         (numbers, meter) + tuple(stanza_syls) + (contours,)
+            line_data = (widths,
+                         (numbers, meter) + tuple(syl_text_list) + (contours,)
                         )
             nested_lines.append(line_data)
             start = end
