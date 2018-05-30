@@ -6,7 +6,7 @@ Created on Fri Mar 23 11:06:07 2018
 CLASS StanzaGroup
 """
 import Greek_Prosody.prosody as GP
-import class_syllable as CS
+from . import class_syllable as CS
 
 
 class StanzaGroup:

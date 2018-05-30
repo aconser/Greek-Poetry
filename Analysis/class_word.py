@@ -6,6 +6,7 @@ Created on Wed Mar 21 17:26:06 2018
 """
 from Greek_Prosody.characters import PUNCTUATION
 from Greek_Prosody.accents import get_accent
+from Greek_Prosody.syllables import get_syllables
 import re
 
 NORMAL_ENCLITICS = ['μου', 'μοι', 'με', 'μευ', 'σου', 'σοι', 'σε',
@@ -117,6 +118,10 @@ class Word ():
     """A class to create and hold data concerning a single word."""
     def __init__ (self, text, POS=''):
         self.text = text
+        self.syllables = get_syllables(self.text)
+            # Note: if first syl starts with a pipe (indicating resolution), 
+            # it is included here, but isn't really a 'syllable' in the full sense.
+        self.syl_count = len([s for s in self.syllables if not s.startswith('|')])
         self.POS = POS
         self.tags = []
         self.lemma = 'placeholder' # ONCE CLTK IS WORKING, ADD LEMMA

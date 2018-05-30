@@ -10,25 +10,11 @@ Created on Thu May 10 15:53:27 2018
 #%% STEP ONE: TOOLS TO PAIR METER AND WORDS
 
 import re
-import pickle
-import pkg_resources
-from operator import itemgetter
-
+import unicodedata
 from .characters import PUNCTUATION
 from .syllables import get_syllables
-from .prosody import positional_length, prosody_tuples, add_length_markers, remove_length_markers, combine_scansions
+from .prosody import positional_length, prosody_tuples, add_length_markers, remove_length_markers
 from .trimeter import scan_trimeter, just_trimeters
-
-from Utilities.class_texts import Texts, normalize_sigmas, normalize
-
-################################
-# PRELIMINARY TOOLS
-################################
-
-def pickle_path (file_name):
-    path = '/'.join(('Pickled', file_name))
-    data_path = pkg_resources.resource_filename('Greek_Prosody', path)
-    return data_path
 
 def lossless_split(string, separator=r'\s+'):
     regex = re.compile(r'(' + separator + r')')
@@ -44,6 +30,30 @@ def lossless_split(string, separator=r'\s+'):
     if hold:
         chunks.append(hold)
     return chunks
+
+def normalize_sigmas (text, lunate=False):
+    """Standardizes sigma characters within a string of text.  Word 
+    internal sigma is 'σ'; word final sigma is 'ς'; capital sigma is Σ.  
+    If the lunate flag is set to True, then all sigmas are set to 'ϲ' / 'Ϲ'. 
+    (Lunate sigmas are standard in the OCT texts).
+    
+    :param str text: a string of greek text
+    :return str t: a copy of the string with the sigmas standardized.
+    """
+    
+    if lunate==True:
+        t = re.sub(r'[σς]', r'ϲ', text)
+        t = re.sub('Σ', 'Ϲ', t)        
+    else:
+        t = re.sub('ϲ', 'σ', text)
+        t = re.sub('Ϲ', 'Σ', t)
+        t = re.sub(r'σ\b(?!’)', r'ς', t)
+    return t
+
+def normalize (text):
+    decomposed = unicodedata.normalize('NFD', text)
+    recomposed = unicodedata.normalize('NFC', decomposed)
+    return recomposed
 
 def just_word (string):
     """Removes whitespace and punctuation from a string (not including apostrophe
@@ -136,16 +146,19 @@ def scanned_words (line, meter='trimeter'):
     return word_tuples
 
 
-#########################################
-# CLASS SCANION_DICT
-#########################################
-    
+#%%  STEP TWO: CLASS SCANSION DICT
+
+
 # =============================================================================
 # Building a dictionary as
 # SCANSTION_DICT = {word : [prosody, prosody, prosody...], 
 #                   word : [prosody, prosody, prosody...]
 #                   }
 # =============================================================================
+from operator import itemgetter
+import pickle
+from greek_prosody import combine_scansions
+import re
 
 class Scansion_Dict ():
 
@@ -278,14 +291,14 @@ class Scansion_Dict ():
 #                for syl in zip(get_syllables(word), scansion):
 #                    pass
     
-    def pickle (self, file_name, directory='..//Pickled_Resources/Scansion_Dictionaries/'):
+    def pickle (self, file_name, directory='.//Pickled/'):
         """Pickles the raw dictionary (self.raw) to the default folder, unless
         another directory is specified.  This raw dictionary can be loaded much
         more quickly (using Load_Dictionary) rather than rebuilding from the
         source texts every time.
         """
         export_file = directory + file_name + '.pkl'
-        with open(pickle_path(export_file), 'wb+') as f:
+        with open(export_file, 'wb+') as f:
             pickle.dump(self.raw, f)
         print('Pickled dictionary saved as {}'.format(export_file))
             
@@ -317,18 +330,121 @@ class Scansion_Dict ():
         if lunate:
             new_text = normalize_sigmas(new_text, lunate=True)
         return new_text
-
-
+    
+#%%
+      
 #############################################
-# BUILD AND LOAD PICKLED DICTIONARIES
+#DEAL WITH THE CORPUS OF TEXTS
 #############################################
+        
+from os import listdir
+
+PLAY_DIRECTORY = 'C:/Users/Anna/Anaconda3/SongDatabase/Corpus/clean_OCTs/'
+# THIS MUST BE CHANGED TO MATCH THE LOCATION OF YOUR TEXT FILES
+
+def _get_text_list (meter='trimeter', encoding='utf-8-sig'):
+    """Loads all the texts for a certain meter and returns a list of strings, 
+    each containing the whole text of wach file.  Further texts can be added as
+    TXT files in the TEXT directory subfolder for the given meter.
+    
+    NOTE: Because my text files were created using WIndows Notepad, they are encoded
+    as 'utf-8-sig'. If more texts are added from another machine, everything should
+    be standardized as 'utf-8', and the default switched accordingly.
+    
+    :param str meter: Now, only 'trimeter' is supported. (Next will be 'hexameter')
+    :return list text_list: a list of strings containing the full text of each
+                            file in the given directory.
+    """
+    if meter == 'trimeter':
+        directory = PLAY_DIRECTORY
+    #elif meter is 'hexameter':
+    #    directory = EPIC_DIRECTORY
+    else:
+        raise ValueError("Requested meter ('{}') is not available".format(meter))
+        
+    file_list = listdir(directory)
+    text_list = []
+    for f in file_list:
+        with open(directory + f, encoding=encoding) as file:
+            text = file.read()
+            text = normalize(text)
+        text_list.append(text)
+    return text_list
+
+def pickle_texts (meter='trimeter', directory='.//Pickled/', encoding='utf-8-sig'):
+    """Loads the full text list for the specified meter using get_text_list, 
+    and then pickles that list for future use.  It also returns the text list
+    for current use.  See note on get_text_list regarding encoding.
+    
+    NOTE: This function should be run everytime new texts are added to the Texts
+    folder, so that those texts are added to the pickled repository accessed by
+    other functions.
+    """
+    
+    text_list = _get_text_list(meter=meter, encoding=encoding)
+    export_file = directory + 'text_list_' + meter + '.pkl'
+    with open(export_file, 'wb+') as f:
+        pickle.dump(text_list, f)
+    print('Pickled texts saved as {}'.format(export_file))
+    return text_list
+    
+def Load_Texts (meter='trimeter', directory='.//Pickled/'):
+    """Loads the full text list.  If a pickled version is available, that is
+    preferred, but if it is not, then the text list is created, pickled, and 
+    returned.
+    """
+    file_name = 'text_list_' + meter + '.pkl'
+    try:
+        with open(directory + file_name, 'rb') as f:
+            text_list = pickle.load(f)
+    except FileNotFoundError:
+        print()
+        print('Pickled text_list not available. Building text_list...')
+        print()
+        text_list = pickle_texts(meter=meter, directory=directory)
+    return text_list
+
+def find_instances (string, context=30, meter='trimeter', full_word=False):
+    """Searches for the input string in all the texts for a given meter.
+    Especially useful for troubleshooting prosody of specific entries.
+    The return is a list of string Messages giving the text number and the match
+    in context.
+    
+    If full_word flag is set, the string must have wordbreaks at the start and
+    end.  This is useful for finding short words that might also appear within
+    larger words.
+    
+    :param str string: Greek text to match
+    :param int context: number of characters of context in each direction
+    :param str meter: currently only trimeter available
+    :return list instances: a list of string messages with text # and context.
+    """
+    MESSAGE = """
+    Text #{}:
+    {}"""
+    string = normalize_sigmas(string, lunate=True)
+    if full_word:
+        regex = re.compile(r'/b'+ string + r'/b')
+    else:
+        regex = re.compile(string)
+    try:
+        text_list = Load_Texts(meter=meter)
+    except ValueError:
+        print("Meter ({}) not available".format(meter))
+    
+    instances = []
+    for i, text in enumerate(text_list):
+        for m in regex.finditer(text):
+            instances.append(MESSAGE.format(
+                    i, text[int(m.start()) - context : int(m.end()) + context]))
+    return instances
 
 def Simple_Dictionary (lunate=False):
     """This function is mostly for testing. It creates a Scansion_Dict instance
     and adds the full text list once."""
     
-    tri_text_list = Texts(text='all-plays')    
-#    hex_text_list = Texts(text='all-epic')
+    tri_text_list = Load_Texts(meter='trimeter')    
+#    hex_text_list = get_text_list(meter='hexameter)
     simple_dict = Scansion_Dict(lunate=lunate)
     for i, t in enumerate(tri_text_list):
         simple_dict.add_text(t)
@@ -362,8 +478,8 @@ def Build_Dictionary (lunate=False, test_mode=False):
     if test_mode:
         tri_text_list = TEST_TEXT
     else:
-        tri_text_list = Texts(text='all-plays')    
-    #    hex_text_list = Texts(text='all-epic')  (SOMEDAY)
+        tri_text_list = Load_Texts(meter='trimeter')    
+#       hex_text_list = load_texts(meter='hexameter)  (SOMEDAY)
     current_dict = Scansion_Dict(lunate=lunate)
     finished = False
     counter = 1
@@ -455,6 +571,7 @@ def Load_Dictionary (lunate=False, simple=False):
     waits rebuilding the dictionary.
     
     """
+    directory='.//Pickled/'
     # Identify dictionary file name:
     if simple:
         file_name = 'simple_dict'
@@ -466,9 +583,10 @@ def Load_Dictionary (lunate=False, simple=False):
     # Attempt to unpickle specified dictionary:
     try:
         NewDict = Scansion_Dict()
-        with open(pickle_path(file_name), 'rb') as f:
+        with open(directory + file_name, 'rb') as f:
             NewDict.raw = pickle.load(f)
     except FileNotFoundError:
         print('Pickled dictionary not available. Building dictionary...')
         NewDict = Build_Dictionary()
     return NewDict
+        

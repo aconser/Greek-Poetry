@@ -103,7 +103,10 @@ def join_resolutions(syl_list):
             waiting = False
         #if current syl starts with pipe, append it to previous syl
         elif s.strip().strip(PUNCTUATION).startswith('|'):
-            new_syls[-1] += s
+            try:
+                new_syls[-1] += s
+            except IndexError:       #Exception for processing individual words
+                new_syls.append(s)
         #otherwise, add the syl as a new item in the list
         else:
             new_syls.append(s)

@@ -19,13 +19,15 @@ from .class_syllable import Syllable
 class Stanza ():
     """A Stanza Object, which stores the data for a set of responding stanzas.
     """
-    def __init__ (self, name, raw_text, start_line=0):
+    def __init__ (self, name, raw_text, start_line=1):
         self.name = name
         self.raw_text = raw_text
         self.start_line = start_line
         self.scansion = []
         self.tags = []
+        self._words = []
         self._syllables = []
+        self._meter = []
         self._contours = []
         self._lines = []
         self._corrupt = None
@@ -54,22 +56,15 @@ class Stanza ():
         """The stanza broken into words, each of which are turned into a Word
         object, which extracts data about the word and applies automatic tagging.
         """
-        raw_words = self.clean_text.split()
-        # POS Tagging - can't yet get CLTK tagger to work.
-#        tagger = POSTag('greek')
-#        pos_list = tagger.tag_tnt(self.clean_text)
-#        assert len(raw_words = len(pos_list), 'Word count not same as POS count'
-#        return [Word(w, pos=p) for w, p in zip(raw_words, pos_list)]
-        return [Word(w) for w in raw_words]
-    
-#    @property
-#    def contonations (self):
-#        """Returns a list of accentual groups, roughly equivalent to the prosodic
-#        'appositive groups' outlined in Devine and Stephens (1994: 285-375).
-#        Proclitics (including articles and prepositions) and enclitics are attached
-#        to their host words.  These units would form a single accentual arc.
-#        """
-#        return contonations(self.clean_text)
+        if not self._words:
+            raw_words = self.clean_text.split()
+            # POS Tagging - can't yet get CLTK tagger to work.
+#            tagger = POSTag('greek')
+#            pos_list = tagger.tag_tnt(self.clean_text)
+#            assert len(raw_words = len(pos_list), 'Word count not same as POS count'
+#            return [Word(w, POS=p) for w, p in zip(raw_words, pos_list)]
+            self._words = [Word(w) for w in raw_words]
+        return self._words
 
     @property
     def meter (self):
@@ -78,6 +73,7 @@ class Stanza ():
         """
         if not self._meter:
             self._meter = PROSODY.get_prosody(self.clean_text)
+        return self._meter
         
     @property
     def raw_lines (self):
@@ -144,7 +140,7 @@ class Stanza ():
         word_data_list = []
         for w in self.words:
             data = (w.text, w.lemma, w.POS, w.tags)
-            word_data_list.extend([data] * SYLLABLES.count_syllables(w.text))
+            word_data_list.extend([data] * w.syl_count)
         # Assemble data about the containing line for each syllable
         line_data_list = []
         for l in self.raw_lines:

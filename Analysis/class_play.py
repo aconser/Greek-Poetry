@@ -19,15 +19,27 @@ class Play ():
     def _stanza_pairs (self):
         stanza_pairs = []
         for row in self.raw_csv:
-            song_num, stanza_name, st_raw, an_raw, meter, notes = row
+            if len(row) == 6:
+                song_num, stanza_name, st_raw, an_raw, meter, notes = row
+                meter_ids = None
+            elif len(row) == 7:
+                song_num, stanza_name, st_raw, an_raw, meter, meter_ids, notes = row
+            elif len(row) == 5:
+                song_num, stanza_name, st_raw, an_raw, notes = row
+                meter = None
+                meter_ids = None
+            else:
+                raise ValueError(
+                        'CSV file ({}) has incorrect number of columns.'.format(self.file))
             name = self.name + '-' + song_num + '-' + stanza_name
             st = Stanza(name, st_raw)
             an = Stanza(name, an_raw)
             pair = StanzaGroup(name, [st, an])
             if meter:
                 clean_meter = meter.replace('\n', '')
-                meter_list = [m for m in clean_meter]
-                pair._meter = meter_list
+                pair._meter = [m for m in clean_meter]
+            if meter_ids:
+                pair._meter_ids = meter_ids
             pair.notes = notes
             pair.song_number = int(song_num)
             stanza_pairs.append(pair)
