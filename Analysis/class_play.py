@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar  5 15:02:20 2018
+CLASS PLAY
 
-@author: Anna
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 from Utilities.stanza_utilities import import_csv
 from .class_stanza import Stanza
@@ -220,8 +221,12 @@ class Play ():
             
 ###########################
         
-def get_analysis (name, csv_name, author = 'Aeschylus'):
+def load_play (name, csv_name, author = 'Aeschylus'):
+    Corpus_Dir = 'C:/Users/Anna/Anaconda3/SongDatabase/Corpus/'
+    play = Play(name, csv_name +'.csv', Corpus_Dir + author +'/')
+    return play
+
+def quick_export_analysis (name, csv_name, author='Aeschylus'):
     play = Play(name, csv_name +'.csv', '..//Corpus/' + author +'/')
     play.export_analysis('..//Corpus/' + author + '/Analyses/')
     return play
-        

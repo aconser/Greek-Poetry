@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar  7 16:55:14 2018
+CLASS LINE
 
-@author: Anna
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 import re
 from .class_syllable import Syllable

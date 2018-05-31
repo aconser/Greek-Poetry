@@ -31,7 +31,7 @@ def is_wordbreak(syl, next_syl):
         return True
     else:
         return False
-    
+        
 def natural_length (syl):
     """Checks the natural length of syllable, returning LONG, SHORT, or UNKNOWN.
     -- LONG are identified by long vowels, diphthongs, or long diacritics.  
@@ -141,6 +141,8 @@ def get_prosody (line, final_anceps=False):
             try:
                 next_syl = syl_list[i+1]
             except IndexError:
+                next_syl = 'end'
+            if '$' in next_syl:
                 next_syl = 'end'
             position = positional_length(syl, next_syl)
             #Check for epic correption:

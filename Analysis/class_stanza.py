@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar  7 15:08:07 2018
+CLASS STANZA
 
-@author: Anna
+This class represents and analyzes data for a single song stanza from Greek tragedy.
 
-Class Stanza
+Next steps for improvement:
+    1. Clean up the total vs. corrupt distinctions.
+
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 #%%
 import re
@@ -63,7 +67,10 @@ class Stanza ():
 #            pos_list = tagger.tag_tnt(self.clean_text)
 #            assert len(raw_words = len(pos_list), 'Word count not same as POS count'
 #            return [Word(w, POS=p) for w, p in zip(raw_words, pos_list)]
-            self._words = [Word(w) for w in raw_words]
+            for i, w in enumerate(raw_words):
+                word = Word(w)
+                word.number = i
+                self._words.append(word)
         return self._words
 
     @property
@@ -139,7 +146,16 @@ class Stanza ():
         # Assemble data about the containing word for each syllable
         word_data_list = []
         for w in self.words:
-            data = (w.text, w.lemma, w.POS, w.tags)
+            data = (w.text, w.number, w.lemma, w.POS, w.tags)
+            # If two words are joined by a resolution, the data of the SECOND word
+            # is retroactively assigned to that resolved syllable, but the tags
+            # of both are combined.
+            if w.initial_resolution:
+                previous_tags = word_data_list[-1][-1]
+                combined_tags = w.tags + previous_tags
+                combined_data = data[:-1] + (combined_tags,)
+                word_data_list = word_data_list[:-1]
+                word_data_list.append(combined_data)
             word_data_list.extend([data] * w.syl_count)
         # Assemble data about the containing line for each syllable
         line_data_list = []
@@ -152,7 +168,7 @@ class Stanza ():
             s.stanza = self.name
             s.stanza_tags = self.tags
             s.prosody = self.meter[i]
-            s.word, s.lemma, s.POS, s.word_tags = word_data_list[i]
+            s.word, s.word_number, s.lemma, s.POS, s.word_tags = word_data_list[i]
             s.line_number, s.corrupt, s.line_tags = line_data_list[i]
         # Assemble and add contour data
         contours = self._get_contours(syllables)

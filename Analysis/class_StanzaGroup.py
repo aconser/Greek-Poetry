@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 23 11:06:07 2018
+CLASS STANZA GROUP
 
-@author: Anna
-CLASS StanzaGroup
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 #%%
 
 from . import class_syllable as CS
+from . import class_word as CW
 
 class StanzaGroup:
     """Contains, compares, and displays the data for two or more stanzas which 
@@ -34,6 +35,7 @@ class StanzaGroup:
         self.line_count = self.strophe.line_count
         self.corrupt = any(s.corrupt for s in self.stanzas)
         self._syllables = []
+        self._words = []
         self._secure_syls = []
         self._meter = []
         self._contours = []
@@ -51,11 +53,35 @@ class StanzaGroup:
         all responding stanzas."""
         if self._syllables:
             return self._syllables
-        position_list = zip([st.syllables for st in self.stanzas])
+        position_list = zip(*[st.syllables for st in self.stanzas])
         combined = [CS.SylGroup(p) for p in position_list]
         self._syllables = combined
         return combined
     
+    @property
+    def words (self):
+        if not self._words:
+            words = []
+            for i, stanza in enumerate(self.stanzas):
+                hold_syl = None
+                start = 0
+                for w in stanza.words:
+                    end = start + w.syl_count
+                    syls = self.syllables[start:end]
+                    if hold_syl:
+                        syls = [hold_syl] + syls
+                        hold_syl = None
+                    word = CW.Complex_Word(w, syls)
+                    word.stanza_name = stanza.name
+                    words.append(word)
+                    start = end
+                    # In case of word-final resolution, duplicate the syl as 
+                    # the first syl of the next word.
+                    if syls and '|' in syls[-1].texts[i]:
+                        hold_syl = syls[-1]
+            self._words = words
+        return self._words
+        
     @property
     def meter (self):
         if not self._meter:
@@ -112,16 +138,32 @@ class StanzaGroup:
         if not self._secure_contours:
             self._secure_contours = [s.contour for s in self.secure_syls]
         return self._secure_contours
+    
+    @property
+    def syl_tags (self):
+        if not self._syl_tags:
+            self._syl_tags = [s.all_tags for s in self.syllables]
+        return self._syl_tags
 
 # SIMPLE STATISTICS
         
     @property
-    def total_syl_count (self):
+    def syl_count (self):
         return self.strophe.syl_count
     
     @property
     def secure_syl_count (self):
         return len(self.secure_syls)
+    
+    def syl_count_DEV (self, wcorrupt=False):
+        """Reminder for a future improvement, making all these doubled proerties
+        into single functions with a flag for whether or not to include corrupt
+        syllables.
+        """
+        if wcorrupt:
+            return self.strophe.syl_count
+        else:
+            return len(self.secure_syls)
     
     @property
     def corrupt_syl_count (self):
@@ -164,30 +206,35 @@ class StanzaGroup:
         """The number of aligned wordbreaks."""
         return self.match_statuses.count('N')
     
+    @property
+    def secure_matched_wb_count (self):
+        return self._secure_match_statuses.count('N')
+    
     @property 
-    def total_repeat_percentage (self, secure=True):
-        return (self.repeat_count / self.secure_syl_count)
+    def total_repeat_percentage (self):
+        return (self.repeat_count / self.syl_count)
 
     @property 
-    def secure_repeat_percentage (self, secure=True):
+    def secure_repeat_percentage (self):
         return (self.secure_repeat_count / self.secure_syl_count)
 
     @property
-    def total_match_percentage (self, secure=True):
-        return (self.match_count / self.secure_syl_count)
+    def total_match_percentage (self):
+        return (self.match_count / self.syl_count)
 
     @property
-    def secure_match_percentage (self, secure=True):
+    def secure_match_percentage (self):
         return (self.secure_match_count / self.secure_syl_count)
     
 # DISPLAY
 
-    def display_data_2 (self):
+    def display_data (self, match_status=False):
         """Returns a list of lines, each of which is a nested tuple containing 
         that line's attributes: 
             (syl_widths, 
             (meter, stanza_1_syls, stanza_2_syls... etc. , contours)
             )
+        If the match_status flag is set, then the match_status is included last.
         """
         nested_lines = []
         start = 0
@@ -197,145 +244,62 @@ class StanzaGroup:
             meter = self.meter[start:end]
             contours = self.pretty_contours[start:end]
             syl_text_list = []
+            match_statuses = []
             widths = []
             for s in self.syllables[start:end]:
                 syl_texts = list(zip(*[s.join_texts for s in self.syllables[start:end]]))
                 syl_text_list.append(syl_texts)
                 widths.append( max(len(s) for s in syl_texts) )
+                if match_status:
+                    match_status.append(s.match_status)
             meter = self.meter[start:end]
-            line_data = (widths,
+            if match_status:
+                line_data = (widths,
+                         (numbers, meter) + tuple(syl_text_list) + (contours, match_statuses)
+                        )
+            else:
+                line_data = (widths,
                          (numbers, meter) + tuple(syl_text_list) + (contours,)
                         )
             nested_lines.append(line_data)
             start = end
         return nested_lines
 
-    def _nested_lines (self):
-        """Returns a list of lines, each of which is tuple containing that 
-        line's attributes 
-            (syl numbers, st_syllables, an_syllables, meter, and contours) 
-        as lists. e.g.
-        [
-        (['0', '1'...], ['st_syl0', 'st_syl1'...], ['an_syl0', 'an_syl1'...], ...),
-        (['23', '24', ...], ['syl23', 'syl24',...], ...),
-        ... ]
-        """
-        nested_lines = []
-        start = 0
-        for i in range(self.line_count):
-            end = start + self.strophe.lines[i].syl_count
-            numbers = [str(n) for n in range(start, end)]
-            st_syls = [s.text for s in self.strophe.syllables[start:end]]
-            an_syls = [s.text for s in self.antistrophe.syllables[start:end]]
-            meter = self.meter[start:end]
-            contours = self.contours[start:end]
-            stats = self.stat_list[start:end]
-            line_data = (numbers, st_syls, an_syls, meter, contours, stats)
-            nested_lines.append(line_data)
-            start = end
-        return nested_lines
-
-    def display (self):
-        print()
-        print(self.name)
-        for l in self._nested_lines():
-            for attribute in l:
-                print(''.join(['{:6}'.format(a) for a in attribute]))
-            print ('------'*len(l[0]))
-    
-    def display_data (self):
-        """Returns a list of lines, each of which is a nested tuple containing 
-        that line's attributes: 
-            (syl_widths, 
-            (meter, stanza_1_syls, stanza_2_syls... etc. , contours)
-            )
-        """
-        nested_lines = []
-        start = 0
-        for i in range(self.line_count):
-            end = start + self.strophe.lines[i].syl_count
-            numbers = [str(n) for n in range(start, end)]
-            stanza_syls = []
-            for st in self.stanzas:
-                stanza_syls.append(
-                        [s.join_text for s in st.syllables[start:end]]
-                        )
-            meter = self.pretty_meter[start:end]
-            contours = self.pretty_contours[start:end]
-            syl_widths = []
-            for syl in zip(*stanza_syls):
-                width = max(len(s) for s in syl)
-                syl_widths.append(width)
-            line_data = (syl_widths,
-                         (numbers, meter) + tuple(stanza_syls) + (contours,)
-                        )
-            nested_lines.append(line_data)
-            start = end
-        return nested_lines
-    
-        
-    def display_readable (self):
+    def display (self, match_status=False):
         print()
         print(self.name)
         print()
-        data = self.display_data()
+        data = self.display_data(match_status=match_status)
         for (widths, attributes) in data:
             for a in attributes:
                 print_items = [str(i).ljust(width) for width, i in zip(widths, a)]
                 print(''.join(print_items))
             total_length = sum(widths)
             print ('-'*total_length)
-    
-    @property
-    def repeat_count (self):
-        if self._repeat_count:
-            return self._repeat_count
-        else:
-            repeat_count = self.contours.count('=')
-            self._repeat_count = repeat_count
-            return repeat_count
-    
-
-    
-    def print_stats (self):
+  
+    def print_stats (self, secure=True):
         self.add_stats()
         print (self.name)
-        print("""
-              M1 [DN-A]          : {}
-              M2 [DN-A, DN]      : {}
-              M3 [DN], [UP,UP-G] : {}
-              M4 (contains 'N')  : {}
-              C3 DN / UP-G       : {}
-              C2 DN / UP         : {}
-              C1 DN-A /[UP, UP-G]: {}
-              
-              Repeats : {}
-              Repeats/Syls : {}""".format(
-              self.M1, self.M2, self.M3, self.M4, self.C3, self.C2, self.C1, 
-              self.repeat_count, self.repeat_percentage)
+        if secure:
+            print('Stats excluding corrupt syllables')
+        else:
+            print('Stats including corrupt syllables')
+        template = """Stats {} corrupt syllables
+        
+              Matches (both post-accentual fall) : {}
+              Repeats (contradiction of contour) : {}
+              Contra (repeat on post-accentual)  : {}
+             
+              Matches/Syls : {}
+              Repeats/Syls : {}"""
+        if secure:
+            print(template.format(
+              'excluding', self.secure_matches, self.secure_repeats, self.secure_contradictions,
+              self.secure_match_percentage, self.secure_repeat_percentage)
+              )
+        else:
+            print(template.format(
+              'including', self.total_matches, self.total_repeats, self.total_contradictions,
+              self.total_match_percentage, self.total_repeat_percentage)
               )
         
-    @property
-    def syl_tags (self):
-        if self._syl_tags:
-            return self._syl_tags
-        syl_tags = []
-        for position in zip(*[s.syllables for s in self.stanzas]):
-            tags = []
-            for syl in position:
-                tags.extend(syl.all_tags)
-            syl_tags.append(tags)
-        self._syl_tags = syl_tags
-        return syl_tags
-            
-#class Position:
-#    def __init__ (self, syl_list):
-#        self.syls = syl_list
-#    
-#    @property
-#    def texts:
-#        return [s.text for s in self.syls]
-#    
-#    @property
-#    def tags:
-#        return [s.alltags for s in self.syls]

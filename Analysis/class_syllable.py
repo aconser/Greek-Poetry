@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar  7 17:12:31 2018
+CLASS SYLLABLE
 
-@author: Anna
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
+
 import Greek_Prosody.accents as ACCENTS
 import re
 WORD_END_RE = re.compile(r".*[\s.,;·!’']$")
@@ -80,11 +82,11 @@ class SylGroup:
 
     @property
     def texts (self):
-        return [s.text for s in self.syl_list]
+        return [s.text for s in self.syllables]
 
     @property
     def join_texts (self):
-        return [s.join_text for s in self.syl_list]
+        return [s.join_text for s in self.syllables]
     
     @property 
     def width (self):
@@ -184,7 +186,7 @@ class SylGroup:
         return status
     
     def is_match (self):
-        return self.match_status == 'M-1'
+        return self.match_status == 'M1'
     
     def is_repeat (self):
         return self.contour == '='
