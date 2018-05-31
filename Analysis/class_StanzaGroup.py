@@ -140,11 +140,23 @@ class StanzaGroup:
         return self._secure_contours
     
     @property
-    def syl_tags (self):
-        if not self._syl_tags:
-            self._syl_tags = [s.all_tags for s in self.syllables]
-        return self._syl_tags
+    def all_tags (self):
+        if not self._all_tags:
+            self._all_tags = [s.all_tags for s in self.syllables]
+        return self._all_tags
 
+    def word_tag_stats(self, tag):
+        """Extracts raw match/repeat data for a given word tag.
+        
+        :param str tag: a word tag
+        :return tuple stats: a tuple of ints (matches, repeats, total_syls)
+        """ 
+        tagged = [w for w in self.words if tag in w.word_tags]
+        match_total = sum([w.match_count for w in tagged])
+        repeat_total = sum([w.repeat_count for w in tagged])
+        syl_total = sum([w.syls for w in tagged])
+        return (match_total, repeat_total, syl_total)
+    
 # SIMPLE STATISTICS
         
     @property

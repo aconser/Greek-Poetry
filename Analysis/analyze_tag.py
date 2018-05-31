@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 29 20:17:59 2018
+CLASS TAG ANALYSIS
 
-@author: Anna
+--probably obsolete with improved word analysis in stanza_group--
+
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 
 class Tag_Analysis:
@@ -22,10 +25,6 @@ class Tag_Analysis:
             ordered_words = sorted(unique_words, key=lambda tup: tup[2])
             self._words = [(w, c) for w, c, _ in ordered_words]
         return self._words
-    
-    def words2 (self):
-        
-        for s in self.syllables:
     
     def match_count (self, wcorrupt=False):
         if wcorrupt:
