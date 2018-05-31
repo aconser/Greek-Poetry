@@ -213,7 +213,7 @@ class Complex_Word ():
         if not self._match_statuses:
             all_statuses = [s.match_status for s in self.syllables]
             self._match_statuses = all_statuses[:-1]
-        return self._contours
+        return self._match_statuses
     
     @property
     def pretty_contours (self):
@@ -229,7 +229,7 @@ class Complex_Word ():
         """The number of syllables with qualities that affect the setting of
         the word. For example, Σωκράτης has three syllables, but only two melodic
         note changes, so only two measured syls."""
-        return len(self.syllables) - 1
+        return max(len(self.syllables)-1, 0)
     @property
     def match_count (self):
         """The total number of matched post-accentual falls."""

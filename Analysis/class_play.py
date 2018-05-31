@@ -16,6 +16,7 @@ class Play ():
         self.raw_csv = import_csv(file, directory)
         self.pairs=self._stanza_pairs()
         self._graph_data = None
+        self._matches_repeats_syls = ()
         
     def _stanza_pairs (self):
         stanza_pairs = []
@@ -46,6 +47,57 @@ class Play ():
             stanza_pairs.append(pair)
         return stanza_pairs
     
+    def tagged_words (self, tag):
+        tagged = []
+        for p in self.pairs:
+            tagged.extend(p.tagged_words(tag))
+        return tagged
+    
+    def word_tag_stats (self, tag):
+        match_total = 0
+        repeat_total = 0
+        syl_total = 0
+        for p in self.pairs:
+            matches, repeats, syls = p.word_tag_stats(tag)
+            match_total += matches
+            repeat_total += repeats
+            syl_total += syls
+        return (match_total, repeat_total, syl_total)
+    
+    def word_tag_analysis (self, tag):
+        matches, repeats, syls = self.word_tag_stats(tag)
+        percent_match = int(matches/syls*100)
+        percent_repeat = int(repeats/syls*100)
+        play_match, play_repeat = self.percent_match_repeat
+        print("""
+              Analysis of tag '{}' :
+              percent match:  {}
+              percent repeat: {}
+              total syllables: {}
+              
+              play match % : {}
+              play repeat% : {}
+              """.format(tag, percent_match, percent_repeat, syls,
+              int(play_match*100), int(play_repeat*100)))
+    
+    @property
+    def matches_repeats_syls (self):
+        if not self._matches_repeats_syls:
+            match_count = 0
+            repeat_count = 0
+            syl_count = 0
+            for p in self.pairs:
+                match_count += p.secure_match_count
+                repeat_count += p.secure_repeat_count
+                syl_count += p.secure_syl_count
+            self._matches_repeats_syls = (match_count, repeat_count, syl_count)
+        return self._matches_repeats_syls
+    
+    @property
+    def percent_match_repeat(self):
+        matches, repeats, syls = self.matches_repeats_syls
+        return (matches/syls, repeats/syls)
+               
     def full_stats (self):
         for p in self.pairs:
             p.print_stats()
