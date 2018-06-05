@@ -15,6 +15,7 @@ class Play ():
         self.name = name
         self.raw_csv = import_csv(file, directory)
         self.pairs=self._stanza_pairs()
+        self._meter_dict = {}
         self._graph_data = None
         self._matches_repeats_syls = ()
         
@@ -38,6 +39,7 @@ class Play ():
             an = Stanza(name, an_raw)
             pair = StanzaGroup(name, [st, an])
             if meter:
+                pair._line_meters = meter.splitlines()
                 clean_meter = meter.replace('\n', '')
                 pair._meter = [m for m in clean_meter]
             if meter_ids:
@@ -79,6 +81,20 @@ class Play ():
               play repeat% : {}
               """.format(tag, percent_match, percent_repeat, syls,
               int(play_match*100), int(play_repeat*100)))
+    
+    def meter_dict (self):
+        if not self._meter_dict:
+            meter_dict = {}
+            for p in self.pairs:
+                for l in p.lines:
+                    meter = ''.join(l.meter) #translate list into string
+                    if meter in meter_dict:
+                        meter_dict[meter].append(l.stats)
+                    else:
+                        meter_dict[meter] = [l.stats]
+            self._meter_dict = meter_dict
+        return self._meter_dict
+    
     
     @property
     def matches_repeats_syls (self):

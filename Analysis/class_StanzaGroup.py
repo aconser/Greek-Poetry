@@ -9,6 +9,7 @@ CLASS STANZA GROUP
 
 from . import class_syllable as CS
 from . import class_word as CW
+from . import class_line as CL
 
 class StanzaGroup:
     """Contains, compares, and displays the data for two or more stanzas which 
@@ -37,6 +38,8 @@ class StanzaGroup:
         self._syllables = []
         self._words = []
         self._secure_syls = []
+        self._line_meters = []
+        self._lines = []
         self._meter = []
         self._contours = []
         self._secure_contours = []
@@ -52,12 +55,11 @@ class StanzaGroup:
     def syllables (self):
         """Creates a list of SylGroup objects from the responding syllables of
         all responding stanzas."""
-        if self._syllables:
-            return self._syllables
-        position_list = zip(*[st.syllables for st in self.stanzas])
-        combined = [CS.SylGroup(p) for p in position_list]
-        self._syllables = combined
-        return combined
+        if not self._syllables: 
+            position_list = zip(*[st.syllables for st in self.stanzas])
+            combined = [CS.SylGroup(p) for p in position_list]
+            self._syllables = combined
+        return self._syllables
     
     @property
     def words (self):
@@ -83,6 +85,30 @@ class StanzaGroup:
             self._words = words
         return self._words
         
+    @property
+    def lines (self):
+        if not self._lines:
+            line_list = []
+            current_line = []
+            current = self.syllables[0].line_numbers
+            for s in self.syllables:
+                if s.line_numbers == current:
+                    current_line.append(s)
+                else:
+                    line_list.append(current_line)
+                    current_line = []
+                    current = s.line_numbers
+                    current_line.append(s)
+            line_list.append(current_line)
+            lines = []
+            for i, l_list in enumerate(zip(*[s.lines for s in self.stanzas])):
+                line = CL.LineGroup(l_list, line_list[i])
+                if self._line_meters:
+                    line.meter = [m for m in self._line_meters[i]]
+                lines.append(line)
+            self._lines = lines
+        return self._lines
+    
     @property
     def meter (self):
         if not self._meter:

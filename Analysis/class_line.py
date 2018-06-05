@@ -81,3 +81,24 @@ class Line ():
     def display (self):
         for row in self.display_data:
             print(''.join(['{:<6}'.format(item) for item in row]))
+            
+class LineGroup ():
+    def __init__ (self, line_list, syl_list):
+        self.lines = line_list
+        self.texts = [l.text for l in self.lines]
+        self.syllables = syl_list
+        self.corrupt = any(l.corrupt for l in self.lines)
+        self.syl_count = len(self.syllables)
+        self.all_tags = [s.all_tags for s in self.syllables]
+        self.meter = [s.prosody for s in self.syllables]
+        self.match_statuses = [s.match_status for s in self.syllables]
+        self.contours = [s.contour for s in self.syllables]
+        self.pretty_contours = [s.pretty_contour for s in self.syllables]
+    
+    @property    
+    def stats (self):
+        percent_match = self.match_statuses.count('M1')/self.syl_count
+        percent_repeat = self.contours.count('=')/self.syl_count
+        return (percent_match, percent_repeat)
+        
+        

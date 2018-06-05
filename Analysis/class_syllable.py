@@ -67,6 +67,7 @@ class SylGroup:
         'Syllables do not have same number'
         self.syllables = syl_list
         self.corrupt = any(s.corrupt for s in self.syllables)
+        self.line_numbers = [s.line_number for s in self.syllables]
         self.prosody = PROSODY.combine_scansions(
                 [s.prosody for s in self.syllables], metrical_symbols=True)
         self.all_contours = [s.contour for s in self.syllables]
