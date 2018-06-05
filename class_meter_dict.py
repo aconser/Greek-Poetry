@@ -45,7 +45,7 @@ class Meter_Dict:
             
     def most_common (self, top=10):
         tuples = [(key, entry[0]) for key, entry in self.consolidated.items()]
-        tuples.sort(key=itemgetter(1))
+        tuples.sort(key=itemgetter(1), reverse=True)
         return tuples[:top]
     
     def most_matches (self, top=10):
@@ -56,6 +56,18 @@ class Meter_Dict:
     def most_repeats (self, top=10):
         tuples = [(key, entry[2], entry[0]) for key, entry in self.consolidated.items()]
         tuples.sort(key=itemgetter(1))
+        return tuples[:top]
+    
+    def best_responsion (self, top=10):
+        tuples = [(key, entry[0], entry[1], entry[2]) for key, entry 
+                  in self.consolidated.items() if entry[0] > 1]
+        tuples.sort(key=lambda tup: tup[2]-tup[3], reverse=True)
+        return tuples[:top]
+        
+    def worst_responsion (self, top=10):
+        tuples = [(key, entry[0], entry[1], entry[2]) for key, entry 
+                  in self.consolidated.items() if entry[0] > 1]
+        tuples.sort(key=lambda tup: tup[2]-tup[3])
         return tuples[:top]
     
 
