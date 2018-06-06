@@ -176,6 +176,4 @@ def get_syllables (text, strip=False, resolutions=True):
 
 def count_syllables (text):
     syls = get_syllables(text)
-    syl_count = len(syls)
-    resolution_count = text.count('|')
-    return syl_count-resolution_count
+    return len(syls)
