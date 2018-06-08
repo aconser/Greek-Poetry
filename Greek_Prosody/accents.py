@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb  5 16:11:32 2018
-
-@author: Anna
-
 ACCENTS
-Tools for looking at accents
+
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 import unicodedata
-#from Greek_Prosody.syllables import get_syllables
-#%%
 
 ACUTE = u'\u0301'
 GRAVE = u'\u0300'
@@ -53,25 +48,3 @@ def get_named_accent (syllable):
 #        if get_named_accent(syl) != '-':
 #            return syl_num
 #        syl_num += 1
-
-#def compare_accents (acc_a, acc_b):
-#    """Identifies the basic responsion status of a syllable, returns a string
-#    of the abbreviation representing that status."""
-#    match_status = ''
-#    if acc_a == 'A-2':
-#        acc_a = '-'
-#    if acc_b == 'A-2':
-#        acc_b = '-'
-#    if acc_a == '-' and acc_b == '-':
-#        match_status = '-'
-#        # Null (not accented in either)
-#    elif acc_a == acc_b:
-#        match_status = 'M-EX'
-#        # Match-Exact (same accent in both stanzas)
-#    elif acc_a != '-' and acc_b != '-':
-#        match_status = 'M-CA'
-#        # Match-Crossaccentual (accented in both, but with different accent type)
-#    else:
-#        match_status = 'C'
-#        # Contradiction (accented in one but not the other)
-#    return match_status
