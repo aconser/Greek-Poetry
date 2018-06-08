@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 CHARACTER TOOLS
 
-Created on Sun May 27 12:17:55 2018
-
-@author: Anna
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 
 import re
