@@ -36,7 +36,7 @@ consonant_re = re.compile('[' + ''.join(CONSONANTS) + ']')
 
 DOUBLE_CONS = ['ζ', 'ξ', 'ψ'] 
 # NOTE: Initial rho ('ῥ') should be added to this list for analyzing conversational 
-# Attic, as seen in especially in Comedy, to some degree in tragic trimeter,
+# Attic, as seen especially in Comedy, to some degree in tragic trimeter,
 # and almost never in tragic lyric or epic.
 
 #double_con_re = re.compile('[' + ''.join(DOUBLE_CONS) + ']')
@@ -73,7 +73,7 @@ MACRON = u'\u0304'  #COMBINING MACRON
 LENGTH_MARKERS = [MACRON, SHORT_MARK]
 
 APOSTROPHE = u'\u02BC'
-PUNCTUATION = ".,;·:'<>[]{}()=+\u037e\u0387\u00B7⟨⟩†"
+PUNCTUATION = ".,;·:'<>[]{}()=+\u037e\u0387\u00B7⟨⟩†—"
 DIAERESIS = u'\u0308'
 
 BREATHINGS = [u'\u0313', #COMBINING COMMA ABOVE

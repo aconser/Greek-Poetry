@@ -10,6 +10,7 @@ CLASS STANZA GROUP
 from . import class_syllable as CS
 from . import class_word as CW
 from . import class_line as CL
+import collections
 
 class StanzaGroup:
     """Contains, compares, and displays the data for two or more stanzas which 
@@ -33,6 +34,7 @@ class StanzaGroup:
         for s in self.stanzas:
             assert s.syl_count == first_syl_count, \
             'Responsion issue in {}'.format(self.name)
+
         self.line_count = self.strophe.line_count
         self.corrupt = any(s.corrupt for s in self.stanzas)
         self._syllables = []
@@ -46,9 +48,10 @@ class StanzaGroup:
         self._pretty_contours = []
         self._match_statuses = []
         self._secure_match_statuses = []
-        self._repeat_count = None
-        self._match_count = None
-        self._syl_tags = []
+        self._total_match_counter = None
+        self._secure_match_counter = None
+        self._total_cont_counter = None
+        self._secure_cont_counter = None
         
 
     @property
@@ -58,7 +61,17 @@ class StanzaGroup:
         if not self._syllables: 
             position_list = zip(*[st.syllables for st in self.stanzas])
             combined = [CS.SylGroup(p) for p in position_list]
-            self._syllables = combined
+            if self._meter:
+                with_meter = []
+                for i, s in enumerate(combined):            
+                    try:
+                        s.meter = self._meter[i]
+                    except:
+                        print ("index out of range in {}".format(self.name))
+                    with_meter.append(s)
+                self._syllables = with_meter
+            else:
+                self._syllables = combined
         return self._syllables
     
     @property
@@ -119,6 +132,11 @@ class StanzaGroup:
     def meter (self, meter_list):
         assert type(meter_list) is list, 'Meter must be a list'
         self._meter = meter_list
+        new_syl_list = []
+        for i, s in enumerate(self.syllables):
+            s.meter = meter_list[i]
+            new_syl_list.append(s)
+        self._syllables = new_syl_list
     
     @property
     def contours (self):
@@ -190,9 +208,11 @@ class StanzaGroup:
         return (match_total, repeat_total, syl_total)
     
 # SIMPLE STATISTICS
-        
+
+    #Count Syllables
+    
     @property
-    def syl_count (self):
+    def total_syl_count (self):
         return self.strophe.syl_count
     
     @property
@@ -200,7 +220,7 @@ class StanzaGroup:
         return len(self.secure_syls)
     
     def syl_count_DEV (self, wcorrupt=False):
-        """Reminder for a future improvement, making all these doubled proerties
+        """Reminder for a future improvement, making all these doubled properties
         into single functions with a flag for whether or not to include corrupt
         syllables.
         """
@@ -213,62 +233,128 @@ class StanzaGroup:
     def corrupt_syl_count (self):
         return self.total_syl_count - self.secure_syl_count
     
+    #Create Counters for match_statuses and contours
+    
+    @property
+    def total_match_counter (self):
+        if not self._total_match_counter:
+            self._total_match_counter = collections.Counter(self.match_statuses)
+        return self._total_match_counter
+    
+    @property
+    def secure_match_counter (self):
+        if not self._secure_match_counter:
+            self._secure_match_counter = collections.Counter(self.secure_match_statuses)
+        return self._secure_match_counter
+    
+    @property
+    def total_cont_counter (self):
+        if not self._total_cont_counter:
+            self._total_cont_counter = collections.Counter(self.contours)
+        return self._total_cont_counter
+
+    @property
+    def secure_cont_counter (self):
+        if not self._secure_cont_counter:
+            self._secure_cont_counter = collections.Counter(self.secure_contours)
+        return self._secure_cont_counter
+    
+    # Counts
+    
     @property
     def total_match_count (self):
         """The total number of matched post-accentual falls."""
-        return self.match_statuses.count('M1')
+        return self.total_match_counter['M1'] + self.total_match_counter['CIRC']
     
     @property
     def secure_match_count (self):
         """The total number of matched post-accentual falls."""
-        return self.secure_match_statuses.count('M1')
+        return self.secure_match_counter['M1'] + self.secure_match_counter['CIRC']
+    
+    @property
+    def total_circ_match_count (self):
+        """The total number of matched post-accentual falls."""
+        return self.total_match_counter['CIRC']
+    
+    @property
+    def secure_circ_match_count (self):
+        """The total number of matched post-accentual falls."""
+        return self.secure_match_counter['CIRC']
     
     @property
     def total_contra_count (self):
         """The number of post-accentual falls that cannot be accomodated in 
         by conflicting contours in responding stanzas."""
-        return self.match_statuses.count('C1')
+        return self.total_match_counter['C1']
     
     @property
     def secure_contra_count (self):
         """The number of post-accentual falls that cannot be accomodated in 
         by conflicting contours in responding stanzas."""
-        return self._secure_match_statuses.count('C1')
+        return self.secure_match_counter['C1']
 
     @property
     def total_repeat_count (self):
         """The number of repeated notes required by a stanza"""
-        return self.contours.count('=')
+        return self.total_cont_counter['='] + self.total_cont_counter['=-A']
     
     @property
     def secure_repeat_count (self):
         """The number of repeated notes required by a stanza"""
-        return self.secure_contours.count('=')
+        return self.secure_cont_counter['='] + self.secure_cont_counter['=-A']
+    
+    @property
+    def total_compatible_count (self):
+        """The number of notes not requiring a melodic repetiton"""
+        return self.total_syl_count - self.total_repeat_count
+    
+    @property
+    def secure_compatible_count (self):
+        """The number of notes not requiring a melodic repetiton"""
+        return self.secure_syl_count - self.secure_repeat_count
 
     @property
     def total_matched_wb_count (self):
         """The number of aligned wordbreaks."""
-        return self.match_statuses.count('N')
+        return self.total_match_counter['N']
     
     @property
     def secure_matched_wb_count (self):
-        return self._secure_match_statuses.count('N')
+        return self.secure_match_counter['N']
+    
+    #Percentages
     
     @property 
     def total_repeat_percentage (self):
-        return (self.repeat_count / self.syl_count)
+        return (self.total_repeat_count / self.total_syl_count)
 
     @property 
     def secure_repeat_percentage (self):
         return (self.secure_repeat_count / self.secure_syl_count)
+    
+    @property 
+    def total_compatible_percentage (self):
+        return (self.total_compatible_count / self.total_syl_count)
+
+    @property 
+    def secure_compatible_percentage (self):
+        return (self.secure_compatible_count / self.secure_syl_count)
 
     @property
     def total_match_percentage (self):
-        return (self.match_count / self.syl_count)
+        return (self.total_match_count / self.total_syl_count)
 
     @property
     def secure_match_percentage (self):
         return (self.secure_match_count / self.secure_syl_count)
+    
+    @property
+    def total_circ_match_percentage (self):
+        return (self.total_circ_match_count / self.total_syl_count)
+
+    @property
+    def secure_circ_match_percentage (self):
+        return (self.secure_circ_match_count / self.secure_syl_count)
     
 # DISPLAY
 
@@ -294,7 +380,7 @@ class StanzaGroup:
                 text_list_by_syl.append(syl_group.join_texts)
                 widths.append( max(len(s) for s in syl_group.join_texts) )
                 if match_status:
-                    match_status.append(syl_group.match_status)
+                    match_statuses.append(syl_group.match_status)
             text_list = list(zip(*text_list_by_syl))
             meter = self.meter[start:end]
             if match_status:

@@ -63,14 +63,16 @@ class SylGroup:
     
     def __init__ (self, syl_list):
         self.number = syl_list[0].number
-        assert all(syl.number == self.number for syl in syl_list), \
-        'Syllables do not have same number'
+#        assert all(syl.number == self.number for syl in syl_list), \
+#        'Syllables do not have same number'
         self.syllables = syl_list
         self.corrupt = any(s.corrupt for s in self.syllables)
         self.line_numbers = [s.line_number for s in self.syllables]
         self.prosody = PROSODY.combine_scansions(
                 [s.prosody for s in self.syllables], metrical_symbols=True)
+        self.meter = []
         self.all_contours = [s.contour for s in self.syllables]
+        self.all_accents = [s.accent for s in self.syllables]
         self._contour = ''
         self._pretty_contour = ''
         self._match_status = ''
@@ -94,7 +96,7 @@ class SylGroup:
         return max(len(s) for s in self.join_texts)
     
     @property
-    def contour (self):
+    def contour_OLD (self):
         if self._contour:
             return self._contour
         contours = self.all_contours
@@ -119,18 +121,54 @@ class SylGroup:
         return combined
     
     @property
+    def contour (self):
+        if self._contour:
+            return self._contour
+        contours = self.all_contours
+        combined = ''
+        if all(a == 'C' for a in self.all_accents) or (
+                'C' in self.all_accents and self.prosody in ['⏕', '⏔']):
+            if 'DN-A' in contours:
+                combined = 'CIRC-DN'
+            else:
+                combined = 'CIRC-X'
+        elif 'DN-A' in contours:
+            if all(c == 'DN-A' for c in contours):
+                combined = 'DN-A'
+            elif 'UP-G' in contours or 'UP' in contours:
+                combined = '=-A'
+            else:
+                combined = 'DN'
+        elif 'DN' in contours:
+            if 'UP-G' in contours or 'UP' in contours:
+                combined = '='
+            else:
+                combined = 'DN'
+        elif 'UP-G' in contours:
+            combined = 'UP-G'
+        elif 'UP' in contours:
+            combined = 'UP'
+        else:
+            combined = 'N'
+        self._contour = combined
+        return combined
+    
+    @property
     def pretty_contour (self):
         """Contour as needed for display / composition. Melodic movement is 
         indicated by arrows.
         """
         if self._pretty_contour:
             return self._pretty_contour
-        arrow_dict = {'N' : 'x',
-                      '=' : '=',
-                      'UP-G' : '≤',
-                      'UP' : '↗',
-                      'DN-A' : '⇘',
-                      'DN' : '↘',
+        arrow_dict = {'N'     : 'x',
+                      '='     : '=',
+                      '=-A'   : '≠',
+                      'UP-G'  : '≤',
+                      'UP'    : '↗',
+                      'DN-A'  : '⇘',
+                      'DN'    : '↘',
+                      'CIRC-DN': '★↘',
+                      'CIRC-X' : '★x',
                      }
                        #Other arrow options I could sub in: '→', '⇗'
         pretty_contour = arrow_dict[self.contour]
@@ -141,7 +179,8 @@ class SylGroup:
     def match_status (self):
         """Categorizes the relationship of the syllable contours in different 
         responding stanzas in the following scheme:
-            M1 : All have a post-accentual fall
+            CIRC:All have a circumflex
+            M1 : All have a post-accentual fall (acute/circumflex)
             M2 : Post-accentual fall and downward motion
             M3 : All rising or all falling
             M4 : Compatible via a word break (see note below)
@@ -159,7 +198,9 @@ class SylGroup:
         status = ''
         contours = self.all_contours
         #Check for matches:
-        if all(c == 'DN-A' for c in contours):
+        if all(a == 'C' for a in self.all_accents):
+            status = 'CIRC'
+        elif all(c == 'DN-A' for c in contours):
             status = 'M1'
         elif all(c in ['DN-A', 'DN'] for c in contours):
             status = 'M2'
@@ -187,10 +228,10 @@ class SylGroup:
         return status
     
     def is_match (self):
-        return self.match_status == 'M1'
+        return self.match_status in ['M1', 'CIRC']
     
     def is_repeat (self):
-        return self.contour == '='
+        return self.contour in ['=', '=-A']
     
     def is_clash (self):
         return self.match_status == 'C1'

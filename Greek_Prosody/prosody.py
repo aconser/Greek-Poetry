@@ -217,6 +217,7 @@ def pretty_scansion (scansion_list):
     scansion_dict = {'X'  : '⏒',
                      'R'  : '⏔',
                      'ANC': '⏒',
+                     'A': '⏒',
                      'L' : '–',
                      'S' : '⏑',
                      }
@@ -230,6 +231,8 @@ ANCEPS_S = '⏓' #(metrical short over long)
 RESOLUTION_L = '⏔' #(metrical long over two shorts)
 RESOLUTION_S = '⏕' #(metrical two shorts over long)
 RESOLUTION = '⏖' #(metrical two shorts joined)]
+
+SCANSION_MARKS = [LONGUM, BREVE, ANCEPS_L, ANCEPS_S, RESOLUTION_L, RESOLUTION_S, RESOLUTION]
 
 def add_length_markers (word, scansion):
     """Identifies ambiguous vowels and adds combining diacriticals marking their

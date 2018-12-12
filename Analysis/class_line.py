@@ -9,12 +9,13 @@ import re
 from .class_syllable import Syllable
 import Greek_Prosody.syllables as SYLLABLES
 
-CORRUPTION_REGEX = re.compile(r'†|\$|⟨\s+⟩')
+CORRUPTION_REGEX = re.compile(r'†|\$|⟨\s+⟩|@')
 
 def is_corrupt(text):
     """Checks whether a string contains markers of corruption. A line is 
     considered corrupt if it contains any obelized text or a lacuna. 
     Editor supplements in brackets are accepted as part of the text.
+    I have marked identical lines with '@'.
     :param text str:
     :rtype: bool
     """
