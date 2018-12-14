@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 27 12:40:32 2018
+SYLLABLES
 
-@author: Anna
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 from .characters import *
    
@@ -176,6 +177,4 @@ def get_syllables (text, strip=False, resolutions=True):
 
 def count_syllables (text):
     syls = get_syllables(text)
-    syl_count = len(syls)
-    resolution_count = text.count('|')
-    return syl_count-resolution_count
+    return len(syls)
