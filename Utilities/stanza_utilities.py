@@ -8,9 +8,11 @@
 import re
 import csv
 
+CORPUS_DIR = '/Users/anna/Documents/Python Scripts/Corpus/'
+
 def save_txt (filename, string):
     """Save a string as a txt file in the Song_Database directory."""
-    directory = '../'
+    directory = CORPUS_DIR
     export_file = directory + filename + '.txt'
     with open(export_file, "w", encoding='utf-8') as output:
         output.write(string)

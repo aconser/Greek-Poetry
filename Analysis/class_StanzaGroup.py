@@ -65,7 +65,7 @@ class StanzaGroup:
                 with_meter = []
                 for i, s in enumerate(combined):            
                     try:
-                        s.meter = self._meter[i]
+                        s.meter = self.meter[i]
                     except:
                         print ("index out of range in {}".format(self.name))
                     with_meter.append(s)
@@ -130,7 +130,7 @@ class StanzaGroup:
     
     @meter.setter
     def meter (self, meter_list):
-        assert type(meter_list) is list, 'Meter must be a list'
+        #assert type(meter_list) is list, 'Meter must be a list'
         self._meter = meter_list
         new_syl_list = []
         for i, s in enumerate(self.syllables):

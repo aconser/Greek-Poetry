@@ -36,6 +36,10 @@ def get_named_accent (syllable):
     accent = get_accent(syllable)
     return ACCENT_DICT[accent]
 
+def count_circs (string):
+    chs = unicodedata.normalize("NFD", string)
+    return chs.count(CIRCUMFLEX)
+
 #def get_accent_index (word):
 #    """Breaks a word into syllables, checks each syllable for an accent, and
 #    returns the syllable index of the first syllable with an accent.

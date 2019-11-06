@@ -18,7 +18,9 @@ Check accentual responsion by line type
 Check accentual responsion between responding lines vs. non-responding lines.
 
 Methodology:
-- don't allow for meter crossing line breaks. This increases sample size, but could reduce reliability since colometry is based on where word breaks align between stanzas.
+- don't allow for meter crossing line breaks. This increases sample size, but 
+could reduce reliability since colometry is based on where word breaks align 
+between stanzas.
 - choose the top 10 most common line types in Aeschylus.
 - exclude any lines with corruption
 

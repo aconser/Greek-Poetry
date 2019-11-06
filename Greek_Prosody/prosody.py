@@ -214,7 +214,7 @@ def get_prosody_alt (text):
             
 
 def pretty_scansion (scansion_list):
-    scansion_dict = {'X'  : '⏒',
+    scansion_dict = {'X'  : 'x',
                      'R'  : '⏔',
                      'ANC': '⏒',
                      'A': '⏒',
@@ -303,7 +303,10 @@ def combine_scansions (scansion_list, metrical_symbols=False):
                         elif prosody is 'R':
                             current = RESOLUTION_L
                     elif current is SHORT:
-                        current = ANCEPS_S
+                        if prosody is LONG:
+                            current = ANCEPS_S
+                        else:
+                            current = SHORT
                     elif current is 'R':
                         current = RESOLUTION_S
                     elif current in [ANCEPS_L, ANCEPS_S] and prosody is 'R':
@@ -324,7 +327,20 @@ def combine_scansions (scansion_list, metrical_symbols=False):
                 combined = combined.replace(old, new)
         return combined
 
-
+def display_prosody (text, final_anceps=False):
+    lines = text.splitlines()
+    for l in lines:
+        syls = get_syllables(l.strip())
+        widths = [len(s) for s in syls]
+        prosody = get_prosody(l, final_anceps)
+        pretty = pretty_scansion(prosody)
+        sized = [p.center(w) for p, w in zip(pretty, widths)]
+        print('' .join(sized))
+        print(''.join(syls))
+        print()
+           
+    
+    
 ################################################
 # TESTING
 ################################################

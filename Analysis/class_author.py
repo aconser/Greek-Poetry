@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-STATISTICS
+CLASS AUTHOR
 
-Created on Thu Jul 12 09:18:15 2018
-
-@author: anna
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
 """
 
 import Analysis.class_play as CP
@@ -46,13 +45,22 @@ PLAY_LIST_DICT = {'Aeschylus' : [('Persae', 'Aesch-Pers'),
                                  ('Agamemnon', 'Aesch-Ag'),
                                  ('Choephori', 'Aesch-Lib'),
                                  ('Eumenides', 'Aesch-Eum'),
-                                 ('Prometheus', 'Aesch-PB'),],
+                                 ('Prometheus', 'Aesch-PB'),
+                                 ],
                     'Sophocles' : [('Ajax', 'Soph-Ajax'),
                                    ('Antigone', 'Soph-Ant')],
                     'Control' : [('Trimeter', 'Soph-Ant-Trimeter'),
                                  ('Prose', 'Lysias'),
                                  ('Anapests', 'AgAnapests'),],
                     }
+
+# =============================================================================
+# NOTE ON EXCLUSIONS:
+#     I have excluded stanza pairs which are identical in the strophe and antistrophe,
+#     namely the following:
+#         -- Agamemnon 5a (part of Cassandra's monody)
+#         -- Suppliants 7g 
+# =============================================================================
 
 class Author:
     def __init__ (self, Author_Name):
@@ -96,7 +104,7 @@ class Author:
     def display (self):
         """Compiles data for all the syllables in a whole play."""
         def display_percent(float_decimal):
-            return(int(float_decimal*100))
+            return(int(float_decimal*1000)/10)
         template = """
     {}
         Compatible Syllables:\t{}%

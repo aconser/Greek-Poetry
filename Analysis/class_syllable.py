@@ -63,6 +63,7 @@ class SylGroup:
     
     def __init__ (self, syl_list):
         self.number = syl_list[0].number
+        self.stanza = syl_list[0].stanza
 #        assert all(syl.number == self.number for syl in syl_list), \
 #        'Syllables do not have same number'
         self.syllables = syl_list
@@ -70,7 +71,7 @@ class SylGroup:
         self.line_numbers = [s.line_number for s in self.syllables]
         self.prosody = PROSODY.combine_scansions(
                 [s.prosody for s in self.syllables], metrical_symbols=True)
-        self.meter = []
+        self.meter = self.prosody
         self.all_contours = [s.contour for s in self.syllables]
         self.all_accents = [s.accent for s in self.syllables]
         self._contour = ''

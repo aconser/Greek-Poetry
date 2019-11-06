@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 FIND IDENTICAL LINES
 This tool checks for identical lines, and prints a summary.  

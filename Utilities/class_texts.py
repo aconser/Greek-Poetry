@@ -27,12 +27,13 @@ from os import listdir
 import unicodedata
 import re
 import pickle
+from Utilities.stanza_utilities import CORPUS_DIR
 
 ######################################
 # SYSTEM CONSTANTS -- Edit before use!
 ######################################
 
-PLAY_DIRECTORY = 'C:/Users/Anna/Anaconda3/SongDatabase/Corpus/clean_OCTs/'
+PLAY_DIRECTORY = CORPUS_DIR +'clean_OCTs/'
 #EPIC_DIRECTORY = ''
 
 #DIRECTORIES MUST BE CHANGED TO MATCH THE LOCATION OF YOUR SOURCE FILES

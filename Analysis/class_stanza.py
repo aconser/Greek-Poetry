@@ -168,6 +168,7 @@ class Stanza ():
             s.stanza = self.name
             s.stanza_tags = self.tags
             s.prosody = self.meter[i]
+            s.meter = self.meter[i] #[ADDED FOR CONVENIENCE]
             s.word, s.word_number, s.lemma, s.POS, s.word_tags = word_data_list[i]
             s.line_number, s.corrupt, s.line_tags = line_data_list[i]
         # Assemble and add contour data
@@ -214,6 +215,18 @@ class Stanza ():
     def contours (self):
         return [s.contour for s in self.syllables]
     
+    @property
+    def accents (self):
+        return [s.accent for s in self.syllables]
+    
+    @property
+    def circ_count (self):
+        """Counts the number of circumflex syllables in a stanza.  Note that
+        this does NOT take into account corruption, so percentages should be 
+        calculated using total_syl_count (not secure)."""
+        
+        return self.accents.count('C')
+        
     def display(self):
         print()
         print (self.name)

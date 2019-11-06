@@ -165,7 +165,12 @@ def assess_responsion (metrical_pattern, corpus_list, anceps=False):
     print('Exported data to {}{}.csv'.format(directory_name, metrical_pattern))
     return None
 #%%
-   
+import Analysis.class_author as CA
+Aeschylus = CA.Author('Aeschylus')
+all_stanzas = [pair for play in Aeschylus.plays for pair in play.pairs]
+assess_responsion("LSLSLSL", all_stanzas)
+    
+
     
 #%%
     

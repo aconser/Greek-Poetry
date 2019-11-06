@@ -46,7 +46,7 @@ class Play ():
             an = Stanza(name, an_raw)
             pair = StanzaGroup(name, [st, an])
             if meter:
-                pair._line_meters = meter.splitlines()
+                pair._line_meters = [prosody.pretty_scansion(l) for l in meter.splitlines()]
                 clean_meter = meter.replace('\n', '')
                 pair._meter = prosody.pretty_scansion([m for m in clean_meter])
             if meter_ids:
@@ -135,7 +135,7 @@ class Play ():
     def display (self):
         """Compiles data for all the syllables in a whole play."""
         def display_percent(float_decimal):
-            return(int(float_decimal*100))
+            return(int(float_decimal*1000)/10)
         template = """
     {}
         Compatible Syllables:\t{}%
@@ -216,6 +216,27 @@ class Play ():
                 data = s.display_data()
                 for (widths, attributes) in data:
                     for a in attributes:
+                        items = [str(i).ljust(width) for width, i in zip(widths, a)]
+                        output.write(''.join(items)+'\n')
+                    total_length = sum(widths)
+                    output.write('-'*total_length + '\n')
+        print("Added file '{}' to directory '{}'".format(export_name, directory_name))
+    
+    def export_analysisTEST (self, directory_name):
+        """Exports the readable display of the entire play to a text file in the
+        specified directory.
+        """
+        export_name = self.name
+        if export_name.endswith('csv') or export_name.endswith('txt'):
+            export_name = export_name[:-4]
+        export_name = export_name + '-analysis.txt'
+        with open(directory_name+export_name, "w", encoding='utf-8') as output:
+            output.write(self.name + '- Musical Analysis\n')
+            for i, s in enumerate(self.pairs):
+                output.write('\n\n{}. {}\n\n'.format(i, s.name))
+                data = s.display_data()
+                for (widths, attributes) in data:
+                    for a in attributes[1:]:
                         items = [str(i).ljust(width) for width, i in zip(widths, a)]
                         output.write(''.join(items)+'\n')
                     total_length = sum(widths)
