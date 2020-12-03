@@ -67,7 +67,7 @@ class StanzaGroup:
                     try:
                         s.meter = self.meter[i]
                     except:
-                        print ("index out of range in {}".format(self.name))
+                        print ("Meter index out of range in {}".format(self.name))
                     with_meter.append(s)
                 self._syllables = with_meter
             else:

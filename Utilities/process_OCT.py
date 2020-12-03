@@ -7,9 +7,13 @@
 #  antistrophic pairs in Greek tragedies.  I am working with text copied and 
 #  pasted from PDFs downloaded from Oxford Scholarly Editions Online.
 #
+#  Note: Euripides PDFs (at least Medea) are encoded differently, and won't 
+#  process. Missing paragraph breaks, and str/ant marks are at end of page. :(
+#
 #  See below for the actual execution.
 
 import re
+import unicodedata
 
 def load_text (file_name, directory_name, utf_type='utf-8-sig'):
     """
@@ -27,14 +31,14 @@ def load_text (file_name, directory_name, utf_type='utf-8-sig'):
         raw_string = f.read()
     return raw_string
 
-def _get_footer (raw_text, pdf_date = 'May 2018'):
+def _get_footer (raw_text, pdf_date = 'December 2017'):
     """Extracts the text of the footer.
     
     :param str raw_text: the raw text, copied and pasted from the pdf
     :param str pdf_date: the last text of the footer, default = 'December 2017'.
     """
-    text = raw_text[:1000]
-    footer = re.findall(r'DOI[\s\S]+? ' + pdf_date + r'\n', text)[0]
+    text = raw_text[:4000]
+    footer = re.findall(r'DOI[\s\S]+? ' + pdf_date + r'[ ]?\n', text)[0]
     assert footer, 'No footer found. Supply a pdf_date= value ?'
     return footer
 
@@ -53,6 +57,7 @@ def clean_OCT (raw_text):
     text = raw_text
     footer = _get_footer(raw_text)
     text = text.replace(footer, '\n')    #remove footer
+    text = unicodedata.normalize('NFC', text) #normalize diacriticals to combined
     text, _, _ = text.partition('NOTES')    #remove endnotes
 
     removal_list = [

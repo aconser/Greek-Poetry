@@ -100,8 +100,8 @@ class Stanza ():
         last_contour = ''
         for s in syl_list:
             contour = ''
-            #Check for ENCLITICS, and correct previous syllable
-            if 'enclitic' in s.word_tags:
+            #Check for ENCLITICS (excluding τοῦ), and correct previous syllable
+            if 'enclitic' in s.word_tags and not 'proclitic' in s.word_tags:
                 if contours[-1] == 'N':
                     contours[-1] = last_contour
                     pre_accent = False

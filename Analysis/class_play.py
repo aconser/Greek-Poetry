@@ -42,6 +42,7 @@ class Play ():
                 raise ValueError(
                         'CSV file ({}) has incorrect number of columns ({}).'.format(self.file, len(row)))
             name = self.name + '-' + song_num + '-' + stanza_name
+            print(name)
             st = Stanza(name, st_raw)
             an = Stanza(name, an_raw)
             pair = StanzaGroup(name, [st, an])
@@ -201,7 +202,7 @@ class Play ():
                 row_text = ','.join(row) + '\n'
                 output.write(row_text)
     
-    def export_analysis (self, directory_name):
+    def export_analysis (self, directory_name, numbers=False):
         """Exports the readable display of the entire play to a text file in the
         specified directory.
         """
@@ -215,6 +216,8 @@ class Play ():
                 output.write('\n\n{}. {}\n\n'.format(i, s.name))
                 data = s.display_data()
                 for (widths, attributes) in data:
+                    if not numbers:
+                        attributes = attributes[1:]
                     for a in attributes:
                         items = [str(i).ljust(width) for width, i in zip(widths, a)]
                         output.write(''.join(items)+'\n')
@@ -222,26 +225,26 @@ class Play ():
                     output.write('-'*total_length + '\n')
         print("Added file '{}' to directory '{}'".format(export_name, directory_name))
     
-    def export_analysisTEST (self, directory_name):
-        """Exports the readable display of the entire play to a text file in the
-        specified directory.
-        """
-        export_name = self.name
-        if export_name.endswith('csv') or export_name.endswith('txt'):
-            export_name = export_name[:-4]
-        export_name = export_name + '-analysis.txt'
-        with open(directory_name+export_name, "w", encoding='utf-8') as output:
-            output.write(self.name + '- Musical Analysis\n')
-            for i, s in enumerate(self.pairs):
-                output.write('\n\n{}. {}\n\n'.format(i, s.name))
-                data = s.display_data()
-                for (widths, attributes) in data:
-                    for a in attributes[1:]:
-                        items = [str(i).ljust(width) for width, i in zip(widths, a)]
-                        output.write(''.join(items)+'\n')
-                    total_length = sum(widths)
-                    output.write('-'*total_length + '\n')
-        print("Added file '{}' to directory '{}'".format(export_name, directory_name))
+#    def export_analysis_pretty (self, directory_name):
+#        """Exports the readable display of the entire play to a text file in the
+#        specified directory.
+#        """
+#        export_name = self.name
+#        if export_name.endswith('csv') or export_name.endswith('txt'):
+#            export_name = export_name[:-4]
+#        export_name = export_name + '-analysis.txt'
+#        with open(directory_name+export_name, "w", encoding='utf-8') as output:
+#            output.write(self.name + '- Musical Analysis\n')
+#            for i, s in enumerate(self.pairs):
+#                output.write('\n\n{}. {}\n\n'.format(names[i]))
+#                data = s.display_data()
+#                for (widths, attributes) in data:
+#                    for a in attributes[1:]:
+#                        items = [str(i).ljust(width) for width, i in zip(widths, a)]
+#                        output.write(''.join(items)+'\n')
+#                    total_length = sum(widths)
+#                    output.write('-'*total_length + '\n')
+#        print("Added file '{}' to directory '{}'".format(export_name, directory_name))
         
     def export_graph_data (self, directory = '/Users/anna/Documents/Dissertation/Graphs/'):
         rows = [['PAIR NAME', 'MATCHED CIRCS', 'MATCHED ACCENTS', 'OTHER NON-REPEAT']]
