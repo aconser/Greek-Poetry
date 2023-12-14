@@ -11,6 +11,10 @@
 #  process. Missing paragraph breaks, and str/ant marks are at end of page. :(
 #
 #  See below for the actual execution.
+#
+#  Update: This is a revised version, which I hope will be able to process
+#  the Euripides texts....
+#
 
 import re
 import unicodedata
@@ -244,11 +248,3 @@ def export_clean_play (raw_file_name, raw_dir_name, export_dir_name):
     export_file_name = raw_file_name + "-CLEAN.txt"
     with open(export_dir_name+export_file_name, "w", encoding='utf-8') as output:
         output.write(clean_text)
-
-def export_clean_and_csv (raw_file_name):
-    raw_dir = '/Users/conser/Library/CloudStorage/OneDrive-UniversityofCincinnati/Research/Python Scripts/Corpus/raw_text/'
-    export_dir = '/Users/conser/Library/CloudStorage/OneDrive-UniversityofCincinnati/Research/Python Scripts/Corpus/Euripides/'
-    export_clean_play (raw_file_name, raw_dir, export_dir)
-    print('CLEAN DONE!')
-    process_OCT_csv (raw_file_name, raw_dir, export_dir)
-    

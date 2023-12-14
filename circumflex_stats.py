@@ -20,17 +20,37 @@ from Utilities.stanza_utilities import CORPUS_DIR
 import Analysis.class_play as CP
 from Analysis.class_word import is_proclitic
 
+
+
 def percent_circ(text):
     circs = count_circs(text)
     words = len(text.split())
     return circs/words
 
-def circ_per_syls(stanza):
+def circs_per_syls_text(text):
+    circs = count_circs(text)
+    syls = count_syllables(text)
+    return circs/syls
+
+def circs_per_line (text):
+    """This is for examining stichic meters"""
+    circs = count_circs(text)
+    lines = len(text.splitlines())
+    return circs/lines
+    
+
+def circ_per_syls (stanza, raw=True):
+    if raw:
+        return circs_per_syls_text(stanza.raw_text)
+    else:
+        print ("ISSUE IN CIRCS_PER_SYLS")
+
+def circ_per_syls_OLD (stanza):
     circs = count_circs(stanza.raw_text)
     return circs/stanza.syl_count
 
 def pr_per (number, mark=True):
-    num = str(int(1000*number)/10)
+    num = str(round(number*100, 2))
     if mark:
         num+='%'
     return num
@@ -54,8 +74,8 @@ def circs_in_play (play, print_all=True, clean_entries=False, exclude=False, str
     else:
         pairs = play.pairs
         
-    strophes = [pair.strophe.raw_text for pair in pairs]
-    antistrophes = [pair.antistrophe.raw_text for pair in pairs]
+    strophes = [pair.strophe.raw_text.replace('$','') for pair in pairs]
+    antistrophes = [pair.antistrophe.raw_text.replace('$','') for pair in pairs]
     
     strophe_circs = sum([count_circs(s) for s in strophes])
     strophe_chars = sum([len(s) for s in strophes])
@@ -92,7 +112,7 @@ def circs_in_play (play, print_all=True, clean_entries=False, exclude=False, str
         print('  Str: ' + pr_per(str_per_syl, mark=True))
         print('  Ant: ' + pr_per(ant_per_syl, mark=True))
         
-    if print_all:
+    if print_all and not str_ant:
         for pair in pairs:
             Stanza_p = pair_circs(pair)
             entry = pair.name + '#'+ pr_per(Stanza_p, mark=False)
@@ -100,15 +120,26 @@ def circs_in_play (play, print_all=True, clean_entries=False, exclude=False, str
                 entry+='#XX'
             print(entry)
     if str_ant:
+        print()
+        print('Strophe#Antistrophe#Overall#Matched')
         for pair in pairs:
             Stanza_p = pair_circs(pair)
-            entry = pair.name + '#'+ pr_per(Stanza_p, mark=False)
+            st_p = circ_per_syls(pair.strophe)
+            an_p = circ_per_syls(pair.antistrophe)
+            
+            entry = '#'.join([str(f) for f in [pair.name, 
+                             st_p, 
+                             an_p,
+                             (st_p+an_p)/2,
+                             pair.total_circ_match_percentage]])
             if (Stanza_p > song_per_syl*1.5):
                 entry+='#XX'
+            
             print(entry)
     return (full_circs, full_syl_count, song_circs, song_syl_count, strophe_circs, antistrophe_circs)
 
 def Str_Ant_circs (play, diff): 
+    """ Make diff .10 or so?"""
     print()
     total_str_higher = 0
     total_ant_higher = 0
@@ -140,7 +171,7 @@ def all_circ_data(Author, print_all=False, clean_entries=False, str_ant=False):
     total_ant_circs =0
     
     print("Circumflexes/Syllable in the plays of {}".format(Author.name))
-    for play in Author.plays[:-1]:     #EXCLUDING PROMETHEUS
+    for play in Author.plays:    
         stats = circs_in_play(play, print_all, clean_entries, str_ant)
         (full_circs, full_syl_count, song_circs, song_syl_count, str_circs, ant_circs) = stats
         total_full_syl_count += full_syl_count
@@ -148,7 +179,7 @@ def all_circ_data(Author, print_all=False, clean_entries=False, str_ant=False):
         total_song_syl_count += song_syl_count
         total_song_circs += song_circs
         total_str_circs += str_circs
-        total_ant_circs += ant_circs
+        total_ant_circs += ant_circsa
         
         
     total_full_per_syl = total_full_circs/total_full_syl_count
@@ -162,7 +193,6 @@ def all_circ_data(Author, print_all=False, clean_entries=False, str_ant=False):
     print('Strophic Pairs:\t' + pr_per(total_song_per_syl))
     print('  Str: ' + pr_per(total_str_per_syl))
     print('  Ant: ' + pr_per(total_ant_per_syl))
-
 #%%
 def get_lines(play, position, len_limit):
     lines = []
@@ -172,6 +202,7 @@ def get_lines(play, position, len_limit):
     return lines
 
 def circs_in_line(play, position, len_limit=3):
+    """Default excludes stanzas with 3 or fewer lines"""
     lines = get_lines(play, position, len_limit)
     str_circs = 0
     ant_circs = 0

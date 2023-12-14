@@ -10,7 +10,7 @@ NOTE: Display functions at the play level are currently broken.
 """
 import re
 
-from Utilities.stanza_utilities import import_csv
+from Utilities.stanza_utilities import import_csv, CORPUS_DIR
 from .class_stanza import Stanza
 from .class_StanzaGroup import StanzaGroup
 from Greek_Prosody import prosody
@@ -174,19 +174,37 @@ class Play ():
             return rows
         
     def display_graph (self):
+        """Non-functional"""
         for row in self.graph_data():
             pass
         
     def export_graph_csv (self, directory_name, short_name=False):
+        """Non-functional"""
         with open(directory_name+self.name+'-graphdata.csv', "w", encoding='utf-8') as output:
             for row in self.graph_data():
                 row_text = ','.join([str(x) for x in row]) + '\n'
                 output.write(row_text)
     
-    def print_graph_csv (self, short_name=False):
-        for row in self.graph_data():    
-            row_text = ','.join(["\""+str(x)+"\"" for x in row])
-            print(row_text)
+    def print_graph_stats (self, stacking=True):
+        """Prints onscreen the data to make a csv with a stacked bar graph. 
+        I need to add a CSV export option, but don't have time now."""
+        
+        if stacking:
+            print ("Stanza Pair#Matched Circumflexes#Other Matched Accents#Other Compatible Syllables")
+            for p in self.pairs:
+                circs = p.secure_circ_match_percentage
+                other_matched = p.secure_match_percentage - circs
+                other_compatible = 1-p.secure_repeat_percentage-other_matched
+                print ("#".join([str(n) for n in [p.name, circs, other_matched, other_compatible]]))
+                
+        else:
+            print ("Stanza Pair#Matched Circumflexes#All Matched Accents#All Compatible Syllables")
+            for p in self.pairs:
+                compatible = 1-p.secure_repeat_percentage
+                matched = p.secure_match_percentage
+                circs = p.secure_circ_match_percentage
+                print ("#".join([str(n) for n in [p.name, circs, matched, compatible]]))
+            
         
     def export_stats (self, directory_name):
         """Exports the play statistics as a .csv file in the specified directory.
@@ -196,13 +214,15 @@ class Play ():
             export_name = export_name[:-4]
         export_name = export_name + '-stats.csv'
         with open(directory_name+export_name, "w", encoding='utf-8') as output:
+            Labels = ['Stanza', 'Secure Syl Count', 'Secure Match Count', 'Secure Repeat Count', 'Notes']
+            output.write(','.join(Labels) + '\n')
             for i, s in enumerate(self.pairs):
                 quoted_notes = "\"" + s.notes + "\""
                 row = [s.name, str(s.secure_syl_count), str(s.secure_match_count), str(s.secure_repeat_count), quoted_notes]
                 row_text = ','.join(row) + '\n'
                 output.write(row_text)
     
-    def export_analysis (self, directory_name, numbers=False):
+    def export_analysis (self, directory_name=CORPUS_DIR, numbers=False):
         """Exports the readable display of the entire play to a text file in the
         specified directory.
         """
@@ -261,13 +281,15 @@ class Play ():
         
             
 ###########################
-        
+
+Operating_Location = '/Users/conser/Library/CloudStorage/OneDrive-UniversityofCincinnati/Research/Python Scripts/'
+
 def load_play (name, csv_name, author = 'Aeschylus'):
-    Corpus_Dir = '/Users/anna/Documents/Python Scripts/Corpus/'
+    Corpus_Dir = Operating_Location + 'Corpus/'
     play = Play(name, csv_name +'.csv', Corpus_Dir + author +'/')
     return play
 
 def quick_export_analysis (name, csv_name, author='Aeschylus'):
-    play = Play(name, csv_name +'.csv', '..//Corpus/' + author +'/')
-    play.export_analysis('.//Corpus/' + author + '/Analyses/')
+    play = Play(name, csv_name +'.csv', Operating_Location + 'Corpus/' + author +'/')
+    play.export_analysis(Operating_Location + 'Corpus/' + author + '/Analyses/')
     return play

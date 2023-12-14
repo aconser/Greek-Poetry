@@ -100,6 +100,9 @@ class Stanza ():
         last_contour = ''
         for s in syl_list:
             contour = ''
+            #Check for word-end in middle of resolved syllable
+            if (s.contains_resolution and ' ' in s.text):
+                pre_accent = True
             #Check for ENCLITICS (excluding τοῦ), and correct previous syllable
             if 'enclitic' in s.word_tags and not 'proclitic' in s.word_tags:
                 if contours[-1] == 'N':

@@ -32,8 +32,17 @@ class StanzaGroup:
         #Check for responsion
         first_syl_count = self.strophe.syl_count
         for s in self.stanzas:
+            if not s.syl_count == first_syl_count:
+                print ()
+                print ("""Responsion issue in {}
+                       
+Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
+                       """.format(self.name))
+                for line_set in zip(*[s.lines for s in self.stanzas]):
+                     print([len(l.syllables) for l in line_set])
+                     print()
             assert s.syl_count == first_syl_count, \
-            'Responsion issue in {}'.format(self.name)
+            """Responsion issue in {} -- SEE ABOVE""".format(self.name)
 
         self.line_count = self.strophe.line_count
         self.corrupt = any(s.corrupt for s in self.stanzas)

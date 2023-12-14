@@ -9,13 +9,16 @@ import re
 from .class_syllable import Syllable
 import Greek_Prosody.syllables as SYLLABLES
 
-CORRUPTION_REGEX = re.compile(r'†|\$|⟨\s+⟩|@')
+CORRUPTION_REGEX = re.compile(r'†|\$|⟨\s+⟩|@') # More acurately "EXCLUSION_REGEX"
 
-def is_corrupt(text):
-    """Checks whether a string contains markers of corruption. A line is 
-    considered corrupt if it contains any obelized text or a lacuna. 
-    Editor supplements in brackets are accepted as part of the text.
-    I have marked identical lines with '@'.
+def is_corrupt (text):
+    """Checks whether a string contains markers of corruption OR is to be 
+    excluded on other grounds. A line is considered corrupt if it contains 
+    any obelized text or a lacuna. Editor supplements in brackets are accepted 
+    as part of the text.
+    I have marked lines to be excluded on other grounds with '@'. This includes 
+    lines of trimeter (where they are included as well as lines that are 
+    precisely repeated between strophe and antistrophe.
     :param text str:
     :rtype: bool
     """

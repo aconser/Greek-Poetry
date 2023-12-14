@@ -20,9 +20,8 @@ Next steps:
 @author: Anna Conser
 """
 
-from greek_prosody import get_prosody
+from Greek_Prosody.prosody import get_prosody
 import re
-#%%
 
 NONFINAL_METRA = ['XLSL',
                   'SLSL',
@@ -87,6 +86,7 @@ def get_metron (meter_string, final=False, conservative=False):
             return safe_metron
         else:
             return metron
+
 def print_error (line, raw_meter):
     print('FAILED TO SCAN LINE:')
     print(line)

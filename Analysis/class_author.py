@@ -8,6 +8,7 @@ CLASS AUTHOR
 """
 
 import Analysis.class_play as CP
+from Utilities.stanza_utilities import CORPUS_DIR
 
 #Ag = CP.load_play('Agamemnon', 'Aesch-Ag')
 #Ag.display()
@@ -47,11 +48,30 @@ PLAY_LIST_DICT = {'Aeschylus' : [('Persae', 'Aesch-Pers'),
                                  ('Eumenides', 'Aesch-Eum'),
                                  ('Prometheus', 'Aesch-PB'),
                                  ],
-                    'Sophocles' : [('Ajax', 'Soph-Ajax'),
-                                   ('Antigone', 'Soph-Ant')],
+                    'Sophocles' : [('Trachiniae', 'Soph-Trach'),
+                                   ('Antigone', 'Soph-Ant'),
+                                   ('Ajax', 'Soph-Ajax'),
+                                   ('Oedipus Rex', 'Soph-OT'),
+                                   ('Electra', 'Soph-El'),
+                                   ('Philoctetes', 'Soph-Phil'),
+                                   ('Oedipus Coloneus', 'Soph-OC')
+                                   ],
                     'Control' : [('Trimeter', 'Soph-Ant-Trimeter'),
                                  ('Prose', 'Lysias'),
-                                 ('Anapests', 'AgAnapests'),],
+                                 ('Anapests', 'AgAnapests'),
+                                 ],
+                    'Euripides' : [('Alcestis', 'Eur-Alc'),
+                                   ('Medea', 'Eur-Med'),
+                                   ('Hippolytus', 'Eur-Hipp'),
+                                   ('Andromache', 'Eur-Andr'),
+                                   ('Hecuba', 'Eur-Hec'),
+                                   #('Troades', 'Eur-Tro'),
+                                   ('Orestes', 'Eur-Orest'),
+                                   ('Bacchae', 'Eur-Ba'),
+                                   # Additional files, based on performance texts rather than OCT
+                                   #('Heracles', 'Eur-Her-newest'), # Performance text - Loeb based
+                                   #('Iphigenia in Aulis', 'Eur-IA'), #   Performance Text -- Loeb based (?)
+                                   ],
                     }
 
 # =============================================================================
@@ -124,10 +144,17 @@ class Author:
                                   display_percent(p.percent_matched_circ)))
     
     def export_stats (self):
-        directory_name = '/Users/anna/Documents/Python Scripts/Statistics/'
+        directory_name = CORPUS_DIR
         with open(directory_name+self.name+'-stats.csv', "w", encoding='utf-8') as output:
+            output.write('Author, Play, Compatible, Matched Accent, Matched Circumflex' +'\n')
+            for p in self.plays:
+                row_data =[self.name, p.name, (1-p.percent_repeat), 
+                           p.percent_match, p.percent_matched_circ]
+                row_text =','.join([str(x) for x in row_data]) + '\n'
+                output.write(row_text)
+            output.write('\n')
             output.write('AUTHOR, STANZA_NAME, SYL_COUNT, COMPATIBLE, MATCH, CIRC' + '\n')
-            for play in self.plays:    
+            for play in self.plays:
                 for p in play.pairs:
                     stanza_name = p.name.replace(self.name+'-', '')
                     row = [self.name, stanza_name, p.secure_syl_count, 
@@ -136,5 +163,16 @@ class Author:
                     row_text = ','.join([str(x) for x in row]) + '\n'
                     output.write(row_text)
         
-        
-        
+    def export_graph_data (self):
+        directory_name = CORPUS_DIR
+        with open(directory_name+self.name+'-graph.csv', "w", encoding='utf-8') as output:
+            output.write('Author, Play, Matched Circumflex, Other Matched Accent, Other Compatible' +'\n')
+            for p in self.plays:
+                circ = p.percent_matched_circ
+                other_accent = p.percent_match - p.percent_matched_circ
+                other_compat = 1-p.percent_repeat-p.percent_match
+                row_data =[self.name, p.name, circ, other_accent, other_compat]
+                row_text =','.join([str(x) for x in row_data]) + '\n'
+                output.write(row_text)
+            output.write('\n')
+           

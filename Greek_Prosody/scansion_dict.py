@@ -135,12 +135,12 @@ def scanned_words (line, meter='trimeter'):
 
 
 #########################################
-# CLASS SCANION_DICT
+# CLASS SCANSION_DICT
 #########################################
     
 # =============================================================================
 # Building a dictionary as
-# SCANSTION_DICT = {word : [prosody, prosody, prosody...], 
+# SCANSION_DICT = {word : [prosody, prosody, prosody...], 
 #                   word : [prosody, prosody, prosody...]
 #                   }
 # =============================================================================

@@ -216,8 +216,10 @@ def get_prosody_alt (text):
 def pretty_scansion (scansion_list):
     scansion_dict = {'X'  : 'x',
                      'R'  : '⏔',
+                     'W'  : '⏕',
                      'ANC': '⏒',
                      'A': '⏒',
+                     'B': '⏓',
                      'L' : '–',
                      'S' : '⏑',
                      }
@@ -243,7 +245,7 @@ def add_length_markers (word, scansion):
     the data from the word_scansion function in the scan_dict module.  This can
     be fixed once all the modules are rearranged....
     """
-    if len(scansion) is 0:
+    if len(scansion) == 0:
         return word
     macronized = ''
     syllables = get_syllables(word)
@@ -300,16 +302,16 @@ def combine_scansions (scansion_list, metrical_symbols=False):
                     if current is LONG:
                         if prosody is SHORT:
                             current = ANCEPS_L
-                        elif prosody is 'R':
+                        elif prosody == 'R':
                             current = RESOLUTION_L
                     elif current is SHORT:
                         if prosody is LONG:
                             current = ANCEPS_S
                         else:
                             current = SHORT
-                    elif current is 'R':
+                    elif current == 'R':
                         current = RESOLUTION_S
-                    elif current in [ANCEPS_L, ANCEPS_S] and prosody is 'R':
+                    elif current in [ANCEPS_L, ANCEPS_S] and prosody == 'R':
                         current = RESOLUTION_L
             combined += current
         if metrical_symbols:

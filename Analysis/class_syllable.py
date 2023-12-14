@@ -30,7 +30,7 @@ class Syllable:
     
     @property
     def word_end (self):
-        clean = re.sub(r'[†\$⟨⟩]', '', self.raw_text)
+        clean = re.sub(r'[†\$⟨⟩\|]', '', self.raw_text)
         if WORD_END_RE.search(clean):
             return True
         else:
@@ -49,6 +49,13 @@ class Syllable:
     
     def add_tag (self, tag):
         self.tags.append(tag)
+        
+    @property
+    def contains_resolution (self):
+        if "|" in self.text:
+            return True
+        else:
+            return False
 
 #######################################
 import Greek_Prosody.prosody as PROSODY
@@ -127,8 +134,13 @@ class SylGroup:
             return self._contour
         contours = self.all_contours
         combined = ''
-        if all(a == 'C' for a in self.all_accents) or (
-                'C' in self.all_accents and self.prosody in ['⏕', '⏔']):
+        if all(a == 'C' for a in self.all_accents):
+        #if all(a == 'C' for a in self.all_accents) or (
+        #        'C' in self.all_accents and self.prosody in ['⏕', '⏔']):
+        
+                # In order to make this work, I need to limit to resolutions 
+                # with accent on first syllable.
+        
             if 'DN-A' in contours:
                 combined = 'CIRC-DN'
             else:

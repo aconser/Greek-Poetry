@@ -66,3 +66,8 @@ class Tag_Analysis:
         
     def display_words (self):
         pass
+#%%
+
+def Analyze_tags (Author="all"):
+    """Runs the about study on a group of texts and compiles data"""
+    pass
