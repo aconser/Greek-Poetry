@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+ANCIENT MAKERSPACES DEMO
+
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
+@license: MIT
+"""
+
+"""
+DATABASE OUTLINE FOR REFERENCE
+
+PLAY_LIST_DICT = {'Aeschylus' : [('Persae', 'Aesch-Pers'),
+                                 ('Septem', 'Aesch-Seven'),
+                                 ('Suppliants', 'Aesch-Supp'),
+                                 ('Agamemnon', 'Aesch-Ag'),
+                                 ('Choephori', 'Aesch-Lib'),
+                                 ('Eumenides', 'Aesch-Eum'),
+                                 ('Prometheus', 'Aesch-PB'),
+                                 ],
+                    'Sophocles' : [('Trachiniae', 'Soph-Trach'),
+                                   ('Antigone', 'Soph-Ant'),
+                                   ('Ajax', 'Soph-Ajax'),
+                                   ('Oedipus Rex', 'Soph-OT'),
+                                   ('Electra', 'Soph-El'),
+                                   ('Philoctetes', 'Soph-Phil'),
+                                   ('Oedipus Coloneus', 'Soph-OC')
+                                   ],
+                    'Control' : [('Trimeter', 'Soph-Ant-Trimeter'),
+                                 ('Prose', 'Lysias'),
+                                 ('Anapests', 'AgAnapests'),
+                                 ],
+                    'Euripides' : [('Alcestis', 'Eur-Alc'),
+                                   ('Medea', 'Eur-Med'),
+                                   ('Hippolytus', 'Eur-Hipp'),
+                                   ('Andromache', 'Eur-Andr'),
+                                   ('Hecuba', 'Eur-Hec'),
+                                   ('Orestes', 'Eur-Orest'),
+                                   ('Bacchae', 'Eur-Ba'),
+                                   ],
+                    }
+"""
+
+#%% LOAD TEXTS
+
+import Analysis.class_author as CA
+
+A = CA.Author ('Aeschylus')
+S = CA.Author ('Sophocles')
+E = CA.Author ('Euripides')
+
+#%% DISPLAY STATISTICS FOR AN AUTHOR
+
+A.display()
+
+#%% EXCISE AND DISPLAY A PLAY
+
+Agamemnon = A.plays[3]
+
+Agamemnon.display()
+
+#%% EXCISE AND DISPLAY A STANZA PAIR
+
+Parodos_A = Agamemnon.pairs[0]
+
+Parodos_A.display()
+
+#%%
+
+

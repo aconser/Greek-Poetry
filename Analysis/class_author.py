@@ -81,6 +81,7 @@ PLAY_LIST_DICT = {'Aeschylus' : [('Persae', 'Aesch-Pers'),
 #         -- Agamemnon 5a (part of Cassandra's monody)
 #         -- Suppliants 7g 
 # =============================================================================
+#%%
 
 class Author:
     def __init__ (self, Author_Name):
@@ -97,7 +98,7 @@ class Author:
             repeat_count = 0
             syl_count = 0
             for p in self.plays:
-                print(p.name)
+                #print(p.name)
                 circs, matches, repeats, syls = p.circs_matches_repeats_syls
                 circ_count += circs
                 match_count += matches

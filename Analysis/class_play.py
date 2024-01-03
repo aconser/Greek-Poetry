@@ -16,6 +16,7 @@ from .class_StanzaGroup import StanzaGroup
 from Greek_Prosody import prosody
 
 #%%
+
 class Play ():
     def __init__ (self, name, file, directory):
         self.name = name
@@ -42,7 +43,7 @@ class Play ():
                 raise ValueError(
                         'CSV file ({}) has incorrect number of columns ({}).'.format(self.file, len(row)))
             name = self.name + '-' + song_num + '-' + stanza_name
-            print(name)
+            #print(name)
             st = Stanza(name, st_raw)
             an = Stanza(name, an_raw)
             pair = StanzaGroup(name, [st, an])
@@ -282,14 +283,12 @@ class Play ():
             
 ###########################
 
-Operating_Location = '/Users/conser/Library/CloudStorage/OneDrive-UniversityofCincinnati/Research/Python Scripts/'
 
 def load_play (name, csv_name, author = 'Aeschylus'):
-    Corpus_Dir = Operating_Location + 'Corpus/'
-    play = Play(name, csv_name +'.csv', Corpus_Dir + author +'/')
+    play = Play(name, csv_name +'.csv', CORPUS_DIR + author +'/')
     return play
 
 def quick_export_analysis (name, csv_name, author='Aeschylus'):
-    play = Play(name, csv_name +'.csv', Operating_Location + 'Corpus/' + author +'/')
-    play.export_analysis(Operating_Location + 'Corpus/' + author + '/Analyses/')
+    play = Play(name, csv_name +'.csv', CORPUS_DIR + author +'/')
+    play.export_analysis(CORPUS_DIR + author + '/Analyses/')
     return play
