@@ -8,7 +8,8 @@
 import re
 import csv
 
-CORPUS_DIR = '/Users/anna/Documents/Python Scripts/Corpus/'
+CORPUS_DIR = '../Corpus/'
+#CORPUS_DIR = '/Users/anna/Documents/Python Scripts/Corpus/'
 
 def save_txt (filename, string):
     """Save a string as a txt file in the Song_Database directory."""
