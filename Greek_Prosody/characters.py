@@ -7,7 +7,6 @@ CHARACTER TOOLS
 
 import re
 import unicodedata
-import string as String
 
 #########################
 # CHARACTER DEFINITIONS
@@ -158,14 +157,6 @@ def has_breathing (string):
             return True
     return False
 
-def is_rough (string):
-    ROUGH_MARKS = [u'\u0314', #COMBINING REVERSED COMMA ABOVE
-                   u'\u1ffe']  #GREEK DASIA
-    for ch in unicodedata.normalize('NFD', string):
-        if ch in ROUGH_MARKS:
-            return True
-    return False
-        
 def has_circumflex (string):
     if CIRCUMFLEX in unicodedata.normalize('NFD', string):
         return True
@@ -185,7 +176,7 @@ def has_length_mark(string):
     return False
 
 #################################
-# TOOLS FOR ADDING SPECIAL MARKS
+# TOOLS FOR ADDING LENGTH MARKS
 #################################
     
 def add_macron (vowel):
@@ -200,104 +191,3 @@ def add_breve (vowel):
     macronized = unicodedata.normalize('NFC', new)
     return macronized
 
-def mark_synizesis (ch1, ch2):
-    synizesis_mark = '\u035C'
-    synizesized = ''.join([ch1, synizesis_mark, ch2])
-    return synizesized
-
-###############################
-# TOOLS FOR TRANSLITERATING
-###############################
-
-def normalize_sigmas (text, lunate=False):
-    """Standardizes sigma characters within a string of text.  Word 
-    internal sigma is 'σ'; word final sigma is 'ς'; capital sigma is Σ.  
-    If the lunate flag is set to True, then all sigmas are set to 'ϲ' / 'Ϲ'. 
-    (Lunate sigmas are standard in the OCT texts).
-    
-    :param str text: a string of greek text
-    :return str t: a copy of the string with the sigmas standardized.
-    """
-    
-    if lunate:
-        t = re.sub(r'[σς]', r'ϲ', text)
-        t = re.sub('Σ', 'Ϲ', t)        
-    else:
-        t = re.sub('ϲ', 'σ', text)
-        t = re.sub('Ϲ', 'Σ', t)
-        t = re.sub(r'σ\b(?!’)', r'ς', t)  #corrected for elision-marking apostrophe
-    return t
-
-
-TRANSLITERATION_DICT = {
-    'α':'a',
-    'β':'b',
-    'γ':'g',
-    'δ':'d',
-    'ε':'e',
-    'ζ':'z',
-    'η':'ē',
-    'θ':'th',
-    'ι':'i',
-    'λ':'l',
-    'κ': 'k',
-    'μ':'m',
-    'ν':'n',
-    'ξ':'x',
-    'ο':'o',
-    'π':'p',
-    'ρ':'r',
-    'σ':'s',
-    'ϲ':'s',
-    'τ':'t',
-    'υ':'u',
-    'φ':'ph',
-    'χ':'kh',
-    'ψ':'ps',
-    'ω':'ō',
-    'ʼ':'ʼ'}
-
-ENGLISH_CIRC = u'\u005E'
-ENGLISH_ACUTE = u'\u005E'
-ENGLISH_GRAVE = u'\u005E'
-
-def transliterate (text):
-    """Transliterate Greek text into English characters"""
-    transliterated = ''
-    first_char = True
-    for char in text:
-       if (char in String.whitespace or char in String.punctuation):
-           first_char = True
-       else:
-           first_char = False
-       if char.isalpha():
-           subchars = unicodedata.normalize('NFD', char)
-           plain_char = subchars[0].lower()
-           if plain_char in TRANSLITERATION_DICT:
-               trans_char = TRANSLITERATION_DICT[plain_char]
-               if char.isupper():
-                   trans_char=trans_char.upper()
-               # if ACUTE in subchars:                                 #These can't combine with macrons, and I don't care enough to get the accents into English right now.
-               #     trans_char = trans_char + ENGLISH_ACUTE
-               # if GRAVE in subchars:
-               #     trans_char = trans_char + ENGLISH_GRAVE
-               # if ACUTE in subchars:
-               #     trans_char = trans_char + ENGLISH_CIRC
-               if MACRON in subchars:
-                   trans_char = trans_char + MACRON
-               trans_char = unicodedata.normalize('NFC', trans_char)
-               if is_rough(char):
-                   if first_char:
-                       trans_char = 'h' + trans_char
-                   else:
-                       trans_char = '[ASPIRATED]' + trans_char
-           else:
-               trans_char = char
-       elif char == ";":
-           trans_char = "?"
-       elif char == "·":
-           trans_char = ";"
-       else:
-           trans_char = char
-       transliterated = transliterated + trans_char
-    return transliterated

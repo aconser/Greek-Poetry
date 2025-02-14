@@ -105,29 +105,4 @@ class LineGroup ():
         percent_repeat = self.contours.count('=')/self.syl_count
         return (percent_match, percent_repeat)
         
-    @property
-    def percent_compatible (self):
-        repeat_count = 0
-        for s in self.syllables:
-            if '=' in s.contour:
-                repeat_count +=1
-        repeat_count = self.contours.count('=') + self.contours.count('=-A')
-        percent_repeat = repeat_count/self.syl_count
-        percent_compatible = 1-percent_repeat
-        return percent_compatible
-
-    @property
-    def percent_matched (self):
-        match_count = 0
-        for s in self.syllables:
-            if s.contour in ['DN-A', 'CIRC-DN', 'CIRC-X']:
-                match_count +=1
-        percent_match = match_count/self.syl_count
-        return percent_match
-
-    @property
-    def percent_compatible_OLD (self):
-        repeat_count = self.contours.count('=') + self.contours.count('=-A')
-        percent_repeat = repeat_count/self.syl_count
-        percent_compatible = 1-percent_repeat
-        return percent_compatible
+        
