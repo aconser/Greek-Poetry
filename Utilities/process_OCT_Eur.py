@@ -42,7 +42,7 @@ def _get_footer (raw_text, pdf_date = 'December 2017'):
     :param str pdf_date: the last text of the footer, default = 'December 2017'.
     """
     text = raw_text[:4000]
-    footer = re.findall(r'DOI[\s\S]+? ' + pdf_date + r'[ ]?\n', text)[0]
+    footer = re.findall(r'DOI[\s\S]+? ' + pdf_date + r'[ ]?', text)[0]
     assert footer, 'No footer found. Supply a pdf_date= value ?'
     return footer
 
