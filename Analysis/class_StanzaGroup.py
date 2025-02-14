@@ -16,10 +16,8 @@ class StanzaGroup:
     """Contains, compares, and displays the data for two or more stanzas which 
     metrically respond to one another."""  
     
-    def __init__ (self, name, stanza_list, author='AuthorName', play='PlayName'):
+    def __init__ (self, name, stanza_list):
         self.name = name
-        self.author = author
-        self.play = play
         self.stanzas = stanza_list
         self.stanza_count = len(self.stanzas)
         
@@ -30,7 +28,6 @@ class StanzaGroup:
         #Name strophe and antistrophe for easy access
         self.strophe = self.stanzas[0]
         self.antistrophe = self.stanzas[1]
-        self._all_tags = None
         
         #Check for responsion
         first_syl_count = self.strophe.syl_count
@@ -221,7 +218,7 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
     
 # SIMPLE STATISTICS
 
-    #Count Syllables -- building 'counters' to use in the stat calls below.
+    #Count Syllables
     
     @property
     def total_syl_count (self):
@@ -245,15 +242,6 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
     def corrupt_syl_count (self):
         return self.total_syl_count - self.secure_syl_count
     
-    
-    @property
-    def secure_peak_count (self, enclitics=False):
-        return sum([s.secure_peak_count for s in self.stanzas])
-   
-    @property 
-    def total_peak_count (self, enclitics=False):
-       return sum([s.total_peak_count for s in self.stanzas])
-   
     #Create Counters for match_statuses and contours
     
     @property
@@ -280,51 +268,32 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
             self._secure_cont_counter = collections.Counter(self.secure_contours)
         return self._secure_cont_counter
     
-    # COUNTS
+    # Counts
     
     @property
     def total_match_count (self):
-        """The total number of matched post-accentual falls, including syllables marked for exclusion."""
+        """The total number of matched post-accentual falls."""
         return self.total_match_counter['M1'] + self.total_match_counter['CIRC']
     
     @property
     def secure_match_count (self):
-        """The secure number of matched post-accentual falls."""
+        """The total number of matched post-accentual falls."""
         return self.secure_match_counter['M1'] + self.secure_match_counter['CIRC']
     
     @property
-    def total_matched_peak_count (self):
-        """A modified version of total_match_count, which excludes word-final
-        circumflex accents.  This is used in the calculation of matched peaks
-        per total peaks, since word-final circumflexes are not currently treated
-        as accent peaks within a single stanza."""
-        return self.total_cont_counter['DN-A'] + self.total_cont_counter['CIRC-DN']
-    
-    @property
-    def secure_matched_peak_count (self):
-        """A modified version of secure_match_count, which excludes word-final
-        circumflex accents.  This is used in the calculation of matched peaks
-        per total peaks, since word-final circumflexes are not currently treated
-        as accent peaks within a single stanza."""
-        return self.secure_cont_counter['DN-A'] + self.secure_cont_counter['CIRC-DN']
-    
-    
-    @property
     def total_circ_match_count (self):
-        """The total number of matched circumflexes, including syllables 
-        marked for exclusion."""
+        """The total number of matched post-accentual falls."""
         return self.total_match_counter['CIRC']
     
     @property
     def secure_circ_match_count (self):
-        """The secure number of matched circumflexes."""
+        """The total number of matched post-accentual falls."""
         return self.secure_match_counter['CIRC']
     
     @property
     def total_contra_count (self):
-        """The total number of post-accentual falls that cannot be accomodated 
-        in by conflicting contours in responding stanzas, including syllables 
-        marked for exclusion."""
+        """The number of post-accentual falls that cannot be accomodated in 
+        by conflicting contours in responding stanzas."""
         return self.total_match_counter['C1']
     
     @property
@@ -335,62 +304,34 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
 
     @property
     def total_repeat_count (self):
-        """The total number of repeated notes required by a stanza, including 
-        syllables marked for exclusion"""
+        """The number of repeated notes required by a stanza"""
         return self.total_cont_counter['='] + self.total_cont_counter['=-A']
     
     @property
     def secure_repeat_count (self):
-        """The secure number  of repeated notes required by a stanza"""
+        """The number of repeated notes required by a stanza"""
         return self.secure_cont_counter['='] + self.secure_cont_counter['=-A']
     
     @property
     def total_compatible_count (self):
-        """The total number of notes not requiring a melodic repetition, 
-        including syllables marked for exclusion."""
+        """The number of notes not requiring a melodic repetiton"""
         return self.total_syl_count - self.total_repeat_count
     
     @property
     def secure_compatible_count (self):
-        """The secure number of notes not requiring a melodic repetition"""
+        """The number of notes not requiring a melodic repetiton"""
         return self.secure_syl_count - self.secure_repeat_count
 
     @property
     def total_matched_wb_count (self):
-        """The total number of aligned wordbreaks, including syllables marked 
-        for exclusion."""
+        """The number of aligned wordbreaks."""
         return self.total_match_counter['N']
     
     @property
     def secure_matched_wb_count (self):
         return self.secure_match_counter['N']
     
-    @property
-    def total_circ_count (self):
-        return sum(s.total_circ_count for s in self.stanzas)
-    
-    @property
-    def secure_circ_count (self):
-        return sum(s.secure_circ_count for s in self.stanzas)
-    
-    @property
-    def total_str_circ_count (self):
-        return self.strophe.total_circ_count
-    
-    @property
-    def secure_str_circ_count (self):
-        return self.strophe.secure_circ_count
-
-    @property
-    def total_ant_circ_count (self):
-        return self.antistrophe.total_circ_count
-  
-    @property
-    def secure_ant_circ_count (self):
-        return self.antistrophe.secure_circ_count
-    
-
-    #PERCENTAGES
+    #Percentages
     
     @property 
     def total_repeat_percentage (self):
@@ -424,64 +365,6 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
     def secure_circ_match_percentage (self):
         return (self.secure_circ_match_count / self.secure_syl_count)
     
-    @property
-    def total_matches_per_peaks (self):
-        return (self.total_matched_peak_count*2 / self.total_peak_count)
-    
-    @property
-    def secure_matches_per_peaks (self):
-        return (self.secure_matched_peak_count*2 / self.secure_peak_count)
-    
-    @property
-    def total_circ_percentage (self):
-        return (self.total_circ_count / self.total_syl_count)
-
-    @property
-    def secure_circ_percentage (self):
-        return (self.secure_circ_count / self.secure_syl_count)
-        
-    @property
-    def total_str_circ_percentage (self):
-        return (self.total_str_circ_count / self.total_syl_count)
-
-    @property
-    def secure_str_circ_percentage (self):
-        return (self.secure_str_circ_count / self.secure_syl_count)
-    
-    @property
-    def total_ant_circ_percentage (self):
-        return (self.total_ant_circ_count / self.total_syl_count)
-
-    @property
-    def secure_ant_circ_percentage (self):
-        return (self.secure_ant_circ_count / self.secure_syl_count)
-
-#DATA SUMMARY
-# This is newer, generates graph data / stats.
-    @property
-    def pair_data (self):
-        # HEADINGS =    ['Author',
-        #                'Play', 
-        #                'Pair', 
-        #                'Compatible', 
-        #                'Matches/Syls', 
-        #                'Matches/Peaks', 
-        #                'Circs/Syls',
-        #                'Str Circs/Syls',
-        #                'Ant Circs/Syls',
-        #                'Matched Circs']
-        pair_data =  [self.author,
-                      self.play,
-                      self.name,
-                      self.secure_compatible_percentage,
-                      self.secure_match_percentage,
-                      self.secure_matches_per_peaks,
-                      self.secure_circ_percentage,
-                      self.secure_str_circ_percentage,
-                      self.secure_ant_circ_percentage,
-                      self.secure_circ_match_percentage]
-        return pair_data
-
 # DISPLAY
 
     def display_data (self, match_status=False):
@@ -521,7 +404,6 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
             start = end
         return nested_lines
 
-    
     def display (self, match_status=False):
         print()
         print(self.name)
@@ -533,82 +415,7 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
                 print(''.join(print_items))
             total_length = sum(widths)
             print ('-'*total_length)
-    
-    # def beta_display_data (self, contours='Arrows', trans=False ):
-    #     """Returns a list of lines, each of which is a nested tuple containing 
-    #     that line's attributes: 
-    #         (syl_widths, 
-    #         (meter, stanza_1_syls, stanza_2_syls... etc. , contours)
-    #         )
-        
-    #     Now including options to use different contour display styles and transliteration. Incomplete.'
-    #     """
-    #     nested_lines = []
-    #     start = 0
-    #     for i in range(self.line_count):
-    #         end = start + self.strophe.lines[i].syl_count
-    #         numbers = [str(n) for n in range(start, end)]
-    #         meter = self.meter[start:end]
-    #         contours = self.pretty_contours[start:end]
-    #         text_list_by_syl = []
-    #         match_statuses = []
-    #         widths = []
-    #         for syl_group in self.syllables[start:end]:
-    #             text_list_by_syl.append(syl_group.join_texts)
-    #             widths.append( max(len(s) for s in syl_group.join_texts) )
-    #             if match_status:
-    #                 match_statuses.append(syl_group.match_status)
-    #         text_list = list(zip(*text_list_by_syl))
-    #         meter = self.meter[start:end]
-    #         if match_status:
-    #             line_data = (widths,
-    #                      (numbers, meter) + tuple(text_list) + (contours, match_statuses)
-    #                     )
-    #         else:
-    #             line_data = (widths,
-    #                      (numbers, meter) + tuple(text_list) + (contours,)
-    #                     )
-    #         nested_lines.append(line_data)
-    #         start = end
-    #     return nested_lines
-    
-    # def beta_display (self, match_status=False, contours='Arrows', trans=False):
-    #     print()
-    #     print(self.name)
-    #     print()
-    #     data = self.display_data(match_status=match_status)
-    #     for (widths, attributes) in data:
-    #         for a in attributes:
-    #             print_items = [str(i).ljust(width) for width, i in zip(widths, a)]
-    #             print(''.join(print_items))
-    #         total_length = sum(widths)
-    #         print ('-'*total_length)
-
-#GRAPH DATA
-    @property
-    def graph_data (self):
-        # labels =    [  'Author',
-        #                'Play', 
-        #                'Pair', 
-        #                'Compatible', 
-        #                'Matches/Syls', 
-        #                'Matches/Peaks', 
-        #                'Circs/Syls',
-        #                'Str Circs/Syls',
-        #                'Ant Circs/Syls',
-        #                'Matched Circs']
-        graph_data = [self.author,
-                      self.play,
-                      self.name,
-                      self.secure_compatible_percentage,
-                      self.secure_match_percentage,
-                      self.secure_matches_per_peaks,
-                      self.secure_circ_percentage,
-                      self.secure_str_circ_percentage,
-                      self.secure_ant_circ_percentage,
-                      self.secure_circ_match_percentage]
-        return graph_data
-
+  
     def print_stats (self, secure=True):
         self.add_stats()
         print (self.name)
@@ -634,19 +441,4 @@ Line-by-line syllable counts [stanza 1, stanza 2, etc.]:
               'including', self.total_matches, self.total_repeats, self.total_contradictions,
               self.total_match_percentage, self.total_repeat_percentage)
               )
-    
-#%% New Experiment : Line responsion stats
-
-    def compatible_by_line (self, secure=False):
-        lines = self.lines
-        if secure:
-            lines = [l for l in lines if not l.corrupt]
-       
-        print ("\n Line-by-line Compatibility in {} \n".format(self.name))
-        for l in self.lines:
-            print("Compatible: {}%".format(str(int(l.percent_compatible*100))))
-            print("Matched Peaks: {}%".format(int(str(l.percent_matched*100))))
-            print ()
-            
         
-

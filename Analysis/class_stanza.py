@@ -23,9 +23,8 @@ from .class_syllable import Syllable
 class Stanza ():
     """A Stanza Object, which stores the data for a set of responding stanzas.
     """
-    def __init__ (self, name, raw_text, start_line=1, author='Author Name'):
+    def __init__ (self, name, raw_text, start_line=1):
         self.name = name
-        self.author = author
         self.raw_text = raw_text
         self.start_line = start_line
         self.scansion = []
@@ -224,47 +223,13 @@ class Stanza ():
         return [s.accent for s in self.syllables]
     
     @property
-    def total_circ_count (self):
+    def circ_count (self):
         """Counts the number of circumflex syllables in a stanza.  Note that
         this does NOT take into account corruption, so percentages should be 
         calculated using total_syl_count (not secure)."""
         
         return self.accents.count('C')
         
-    @property
-    def secure_circ_count (self):
-        count = 0
-        for s in self.syllables:
-            if s.corrupt==False and s.accent=='C':
-                count = count + 1
-        return count
-    
-    @property
-    def total_peak_count (self, enclitics=False):
-        """ Counts the number of accentual peaks in a stanza, a.k.a.
-        acutes and circumflexes (excluding second, pre-enclitic acutes)"""
-        
-        if enclitics:
-            return (self.accents.count('A') + self.accents.count('C'))
-        else:
-            return self.contours.count('DN-A')
-    
-    @property
-    def secure_peak_count (self, enclitics=False):
-        count = 0
-        if enclitics:
-            for s in self.syllables:
-                if s.corrupt==False and s.accent in ['C', 'A']:
-                    count = count + 1
-        else:
-            for s in self.syllables:
-                if s.corrupt==False and s.contour=='DN-A':
-                    count = count + 1
-               #  elif s.corrupt==False and s.accent=='C':
-               #    count = count + 1
-        return count
-    
-
     def display(self):
         print()
         print (self.name)

@@ -8,7 +8,7 @@ Created on Mon Apr 30 12:44:55 2018
 #from class_Play import Play
 
 import matplotlib.pyplot as plt
-from Analysis.class_play import Play
+from class_play import Play
 
 #%%
 def graph_play (Play, y_limit=23, x_limit=33):
@@ -21,11 +21,10 @@ def graph_play (Play, y_limit=23, x_limit=33):
         color: song in which stanza occurs
     """
     color_list = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'grey']
-    data = Play.all_pairs_data(headings=False)
+    data = Play.graph_data(short_name=True)
     #Organize data by song
     #  Each song is a list of rows, which are each as list as follows:
     # [name, song_num, stanza_name, syl_count, repeat_percentage, match_percentage]    
-    # NEW pair_data = [author, name, pair, compatible, match, matched peaks, circs, str_circs, ant_circs, matched circs]
     song_list = []
     current_song = []
     current_song_num = 1
@@ -42,8 +41,8 @@ def graph_play (Play, y_limit=23, x_limit=33):
     fig, ax = plt.subplots()
 #    plt.figure(figsize=(13.33, 7.5), dpi=300)
     for song in song_list:
-        x = [row[3]*100 for row in song]  # compatible percentages
-        y = [row[5]*100 for row in song]  # matched peak percentages
+        x = [row[4]*100 for row in song]  # repeat percentages
+        y = [row[5]*100 for row in song]  # match percentages
         size = [row[3]*2 for row in song]  # syllable count
         color = color_list[song[0][1]-1] #song number
         song_name = 'Song ' + str(song[0][1])

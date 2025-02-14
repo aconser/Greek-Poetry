@@ -2,9 +2,10 @@
 """
 CLASS PLAY
 
-@author: Anna Conser, University of Cincinnati, anna.conser@uc.edu
+@author: Anna Conser, Columbia University, anna.conser@gmail.com
 @license: MIT
 
+NOTE: Display functions at the play level are currently broken.
 
 """
 import re
@@ -17,15 +18,14 @@ from Greek_Prosody import prosody
 #%%
 
 class Play ():
-    def __init__ (self, name, file, directory, author='Author Name'):
+    def __init__ (self, name, file, directory):
         self.name = name
-        self.author = author
         self.file = file
         self.raw_csv = import_csv(file, directory)
         self.pairs=self._stanza_pairs()
         self._meter_dict = {}
         self._graph_data = None
-        self._all_data = None
+        self._cmrs = None
         
     def _stanza_pairs (self):
         stanza_pairs = []
@@ -44,9 +44,9 @@ class Play ():
                         'CSV file ({}) has incorrect number of columns ({}).'.format(self.file, len(row)))
             name = self.name + '-' + song_num + '-' + stanza_name
             #print(name)
-            st = Stanza(name, st_raw, author=self.author)
-            an = Stanza(name, an_raw, author=self.author)
-            pair = StanzaGroup(name, [st, an], author=self.author, play=self.name)
+            st = Stanza(name, st_raw)
+            an = Stanza(name, an_raw)
+            pair = StanzaGroup(name, [st, an])
             if meter:
                 pair._line_meters = [prosody.pretty_scansion(l) for l in meter.splitlines()]
                 clean_meter = meter.replace('\n', '')
@@ -103,90 +103,37 @@ class Play ():
                         meter_dict[meter] = [l.stats]
             self._meter_dict = meter_dict
         return self._meter_dict
-
-# COMPILE AND ACCESS DATA FOR ENTIRE PLAY
-
-    @property
-    def all_data (self):
-        if not self._all_data:
-            compatible_count = 0
-            all_match_count = 0
-            matched_peak_count = 0
-            syl_count = 0
-            peak_count = 0
-            circ_count = 0
-            str_circ_count = 0
-            ant_circ_count = 0
-            matched_circ_count = 0
-            for p in self.pairs:
-                matched_circ_count += p.secure_circ_match_count
-                all_match_count += p.secure_match_count
-                matched_peak_count += p.secure_matched_peak_count
-                compatible_count += p.secure_compatible_count
-                syl_count += p.secure_syl_count
-                peak_count+= p.secure_peak_count
-                circ_count+= p.secure_circ_count
-                str_circ_count+= p.secure_str_circ_count
-                ant_circ_count+= p.secure_ant_circ_count
-            self._all_data = (compatible_count, 
-                              all_match_count,
-                              matched_peak_count,
-                              syl_count, 
-                              peak_count, 
-                              circ_count, 
-                              str_circ_count, 
-                              ant_circ_count, 
-                              matched_circ_count)
-        return self._all_data
     
     @property
-    def syl_count (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (syls)
+    def circs_matches_repeats_syls (self):
+        if not self._cmrs:
+            circ_count = 0
+            match_count = 0
+            repeat_count = 0
+            syl_count = 0
+            for p in self.pairs:
+                circ_count += p.secure_circ_match_count
+                match_count += p.secure_match_count
+                repeat_count += p.secure_repeat_count
+                syl_count += p.secure_syl_count
+            self._cmrs = (circ_count, match_count, repeat_count, syl_count)
+        return self._cmrs
     
     @property
     def percent_match (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (all_matches/syls)
+        circs, matches, repeats, syls = self.circs_matches_repeats_syls
+        return (matches/syls)
 
     @property
     def percent_repeat (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (1-compatible/syls)
-    
-    @property
-    def percent_compatible (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (compatible/syls)
+        circs, matches, repeats, syls = self.circs_matches_repeats_syls
+        return (repeats/syls)
 
     @property
     def percent_matched_circ (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (matched_circs/syls)
-                
-    @property
-    def percent_matched_peaks (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (all_matches*2/peaks)
-                    
-    @property
-    def percent_circs (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
+        circs, matches, repeats, syls = self.circs_matches_repeats_syls
         return (circs/syls)
-                    
-    @property
-    def percent_str_circs (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (str_circs/syls)
-    
-    @property
-    def percent_ant_circs (self):
-        compatible, all_matches, matched_peaks, syls, peaks, circs, str_circs, ant_circs, matched_circs = self.all_data
-        return (ant_circs/syls)
-    
-
-# DISPLAY DATA FOR THE PLAY AND ITS PAIRS
-    
+                
     def display (self):
         """Compiles data for all the syllables in a whole play."""
         def display_percent(float_decimal):
@@ -194,77 +141,45 @@ class Play ():
         template = """
     {}
         Compatible Syllables:\t{}%
-        Syls w/Matched Peaks:\t{}%
-        Peaks that Respond:\t{}%
-        Syls with Circumflex:\t{}%
-        Str Syls with Circ:\t{}%
-        Ant Syls with Circ:\t{}%
+        Matched (non-grave):\t{}%
         Matched Circumflexes:\t{}%"""
-        
-
         
         print()
         print(self.name)
         print()
         
         print(template.format('TOTALS', 
-                              display_percent(self.percent_compatible),
+                              display_percent(1-self.percent_repeat),
                               display_percent(self.percent_match),
-                              display_percent(self.percent_matched_peaks),
-                              display_percent(self.percent_circs),
-                              display_percent(self.percent_str_circs),
-                              display_percent(self.percent_ant_circs),
                               display_percent(self.percent_matched_circ)))
         for p in self.pairs:
             print(template.format(p.name, 
-                                  display_percent(p.secure_compatible_percentage),
+                                  display_percent(1-p.secure_repeat_percentage),
                                   display_percent(p.secure_match_percentage),
-                                  display_percent(p.secure_matches_per_peaks),
-                                  display_percent(p.secure_circ_percentage),
-                                  display_percent(p.secure_str_circ_percentage),
-                                  display_percent(p.secure_ant_circ_percentage),
                                   display_percent(p.secure_circ_match_percentage)))
 
-## DATA SUMMARIES (for graphing or passing up the chain)
-
-    HEADINGS = ['Author',
-            'Play', 
-            'Pair', 
-            'Compatible', 
-            'Matches/Syls', 
-            'Matched Peaks/Peaks', 
-            'Circs/Syls',
-            'Str Circs/Syls',
-            'Ant Circs/Syls',
-            'Matched Circs']
-    
-    def all_pairs_data (self, headings=True):
-        data = [p.pair_data for p in self.pairs]
-        if headings:
-            data.insert(0, self.HEADINGS)
-        return data
-    
-    def play_data (self, headings=True):
-        data = [self.author,
-                self.name,
-                "All Pairs",
-                self.percent_compatible,
-                self.percent_match,
-                self.percent_matched_peaks,
-                self.percent_circs,
-                self.percent_str_circs,
-                self.percent_ant_circs,
-                self.percent_matched_circ]
-        if headings:
-            data.insert(0, self.HEADINGS)
-        return data
+    def graph_data (self, short_name=False):
+        if self._graph_data:
+            return self._graph_data
+        else:
+            self.add_stats()
+            rows = []
+            for p in self.pairs:
+                if short_name:
+                    stanza_name = p.name.replace(self.name+'-', '')
+                else:
+                    stanza_name = p.name
+                row = [self.name, p.song_number, stanza_name, p.syl_count, p.repeat_percentage, p.match_percentage]
+                rows.append(row)
+            self._graph_data = rows
+            return rows
         
     def display_graph (self):
         """Non-functional"""
         for row in self.graph_data():
             pass
         
-    def export_graph_csv (self, directory_name=CORPUS_DIR, short_name=False):
+    def export_graph_csv (self, directory_name, short_name=False):
         """Non-functional"""
         with open(directory_name+self.name+'-graphdata.csv', "w", encoding='utf-8') as output:
             for row in self.graph_data():
@@ -292,10 +207,8 @@ class Play ():
                 print ("#".join([str(n) for n in [p.name, circs, matched, compatible]]))
             
         
-    def export_stats (self, directory_name=CORPUS_DIR):
+    def export_stats (self, directory_name):
         """Exports the play statistics as a .csv file in the specified directory.
-        NOTE: I am not updating this for now, on the assumption that data will 
-        be exported at the Author level and chunked out from there.
         """
         export_name = self.name
         if export_name.endswith('csv'):
@@ -354,16 +267,14 @@ class Play ():
 #                    output.write('-'*total_length + '\n')
 #        print("Added file '{}' to directory '{}'".format(export_name, directory_name))
         
-    def export_graph_data (self, directory = CORPUS_DIR):
-        rows = [['PAIR NAME', 'MATCHED CIRCS', 'OTHER MATCHED ACCENTS', 'OTHER NON-REPEAT', 'ALL MATCHED', 'ALL COMPATIBLE']]
+    def export_graph_data (self, directory = '/Users/anna/Documents/Dissertation/Graphs/'):
+        rows = [['PAIR NAME', 'MATCHED CIRCS', 'MATCHED ACCENTS', 'OTHER NON-REPEAT']]
         for pair in self.pairs:
             name = re.sub(r'^\w+-', '', pair.name)
             circ_match = pair.secure_circ_match_percentage
             other_match = (pair.secure_match_percentage - circ_match)
             other_non_repeat = (1 - pair.secure_repeat_percentage) - (circ_match +other_match)
-            all_matched = pair.secure_match_percentage
-            all_compatible = 1 - pair.secure_repeat_percentage
-            rows.append([name, circ_match, other_match, other_non_repeat, all_matched, all_compatible])
+            rows.append([name, circ_match, other_match, other_non_repeat])
         with open(directory+self.name+'-graphdata.csv', "w", encoding='utf-8') as output:
             for row in rows:
                 row_text = ','.join([str(x) for x in row]) + '\n'
@@ -373,8 +284,8 @@ class Play ():
 ###########################
 
 
-def load_play (name, csv_name, author='Aeschylus'):
-    play = Play(name, csv_name +'.csv', CORPUS_DIR + author +'/', author=author)
+def load_play (name, csv_name, author = 'Aeschylus'):
+    play = Play(name, csv_name +'.csv', CORPUS_DIR + author +'/')
     return play
 
 def quick_export_analysis (name, csv_name, author='Aeschylus'):

@@ -200,9 +200,9 @@ class SylGroup:
             C1 : Post-accentual fall paired with UP or UP-G
             C2 : UP and DN
             C3 : UP-G and DN
-        Note: Optimized for STANZA PAIRS, rather than Pindar, etc.  If multiple 
+        Note: BUILT TO ANALYZE STANZA PAIRS, rather than Pindar, etc.  If multiple 
         stanzas were being analyzed together, it would be better to distinguish
-        the PERCENTAGE of stanzas that agree at a level, rather than just a binary.
+        the percentage of stanzas that agree at a level, rather than just a binary.
         
         :return str status: a code indicating the level of alignment.
         """
